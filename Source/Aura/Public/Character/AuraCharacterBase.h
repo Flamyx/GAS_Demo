@@ -31,6 +31,10 @@ public:
 	virtual bool IsDead_Implementation() const override;
 	virtual AActor* GetAvatar_Implementation() override;
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;
+	virtual int32 GetMinionCount_Implementation() override { return MinionCount; };
+	virtual int32 GetMinionLimit_Implementation() override { return MinionLimit; };
+	virtual void UpdateMinionCount_Implementation(int32 AddVal) override { MinionCount += AddVal; };
+	virtual ECharacterClass GetCharacterClass_Implementation() override;
 	/* End Combat Interface */
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -52,6 +56,9 @@ protected:
 	TMap<FGameplayTag, FName> TagToWeaponSocketName;
 
 	bool bDead = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
+	ECharacterClass CharacterClass = ECharacterClass::Warrior;
 
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
@@ -99,11 +106,19 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundBase> DeathSound;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 MinionCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 MinionLimit = 0;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
 
+	UPROPERTY(EditAnywhere, Category = "Abilities")
+	TArray<TSubclassOf<UGameplayAbility>> StartupPassiveAbilities;
+
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;
-
 };

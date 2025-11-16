@@ -13,7 +13,8 @@ void UMeteoriteProjectileSpell::InputReleased(const FGameplayAbilitySpecHandle H
 											const FGameplayAbilityActorInfo* ActorInfo,
 											const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	FString ChargeString = FString::Printf(TEXT("Charge time %.2f"), ChargeTime);
+	//FString ChargeString = FString::Printf(TEXT("Charge time %.2f"), ChargeTime);
+	//UAbilityTask_WaitInputRelease
 	GetWorld()->GetTimerManager().ClearTimer(ChargeTimerHandle);
 
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
@@ -31,8 +32,9 @@ void UMeteoriteProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetL
 	const FVector2d SpawnOffset = { FMath::RandRange(-lb, lb), FMath::RandRange(-rb, rb) };
 	const FVector ActorLocation = GetAvatarActorFromActorInfo()->GetActorLocation();
 	const FVector SpawnLocation = { ActorLocation[0] - SpawnOffset[0], ActorLocation[1] - SpawnOffset[1], SpawnHeight };
+	//DrawDebugSphere(GetWorld(), ProjectileTargetLocation, 15, 12, FColor::Red, false, 5.f);
 	FRotator Rotation = (ProjectileTargetLocation - SpawnLocation).Rotation();
-
+	//DrawDebugDirectionalArrow(GetWorld(), SpawnLocation, ProjectileTargetLocation, 5.f, FColor::Red, false, 5.f);
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(SpawnLocation);
 	SpawnTransform.SetRotation(Rotation.Quaternion());
@@ -42,6 +44,7 @@ void UMeteoriteProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetL
 		ProjectileClass, SpawnTransform,
 		OwningActor, Cast<APawn>(OwningActor),
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	Projectile->SetSphereRadius(ChargeTime);
 
 	const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OwningActor);
 	FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
@@ -62,8 +65,8 @@ void UMeteoriteProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetL
 	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), ContextHandle);
 	FGameplayEffectSpecHandle ResidualSpecHandle = SourceASC->MakeOutgoingSpec(ResidualDamageEffectClass, GetAbilityLevel(), ContextHandle.Duplicate());
 	
-	FString ChargeString = FString::Printf(TEXT("Charge time %.2f"), ChargeTime);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, ChargeString);
+	//FString ChargeString = FString::Printf(TEXT("Charge time %.2f"), ChargeTime);
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, ChargeString);
 	for (auto Pair : DamageTypes)
 	{
 		if (Pair.Key.MatchesTagExact(FAuraGameplayTags::Get().Damage_Residual_Fire))
@@ -93,4 +96,5 @@ void UMeteoriteProjectileSpell::StartChargeTimeline()
 void UMeteoriteProjectileSpell::ChargeTick()
 {
 	ChargeTime = FMath::Clamp(ChargeTime + FChargeTick, 0.f, MaxChargeTime);
+	CircleActorTick();
 }

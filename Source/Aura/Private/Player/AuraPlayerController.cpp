@@ -151,7 +151,16 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
-	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
+	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_RMB))
+	{
+		auto ASC = GetASC();
+		if (ASC)
+		{
+			ASC->AbilityInputTagHeld(InputTag);
+		}
+		return;
+	}
+	else if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
 	{
 		auto ASC = GetASC();
 		if (ASC)

@@ -5,9 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/AudioComponent.h"
 #include "GameplayEffectTypes.h"
 #include "Components/SphereComponent.h"
 #include "MeteoriteProjectile.generated.h"
+
+class UNiagaraSystem;
 
 /**
  * 
@@ -58,4 +61,17 @@ private:
 	float LifeSpan = 15.f;
 	
 	bool bHit = false;
+
+	UPROPERTY(EditAnywhere)
+		TObjectPtr<UNiagaraSystem> ImpactEffect;
+
+	UPROPERTY(EditAnywhere)
+		TObjectPtr<USoundBase> ImpactSound;
+
+	UPROPERTY(EditAnywhere)
+		TObjectPtr<USoundBase> LoopingSound;
+	UPROPERTY()
+		TObjectPtr<UAudioComponent> LoopingSoundComponent;
+
+	void PlayImpact();
 };

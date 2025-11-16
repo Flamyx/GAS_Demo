@@ -5,6 +5,8 @@
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/AttributeInfo.h"
 #include "AuraGameplayTags.h"
+#include "GameplayTagsManager.h"
+#include "Interaction/PlayerInterface.h"
 
 void UAttributeMenuWidgetController::BroadcastInitialValues()
 {
@@ -15,6 +17,10 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 	{
 		BroadcastAttributeInfo(Pair.Key, Pair.Value());
 	}
+
+	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
+	OnAttributePointsAddedDelegate.Broadcast(AuraPlayerState->GetAttributePoints());
+	OnSpellPointsAddedDelegate.Broadcast(AuraPlayerState->GetSpellPoints());
 }
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
@@ -31,6 +37,32 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	}
+
+	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
+	AuraPlayerState->SpellPointsDelegate.AddUObject(this, &UAttributeMenuWidgetController::OnSpellPointsAdded);
+	AuraPlayerState->AttributePointsDelegate.AddUObject(this, &UAttributeMenuWidgetController::OnAttributePointsAdded);
+}
+
+void UAttributeMenuWidgetController::OnSpellPointsAdded(int32 IncomingSpellPoints)
+{
+	OnSpellPointsAddedDelegate.Broadcast(IncomingSpellPoints);
+}
+
+void UAttributeMenuWidgetController::OnAttributePointsAdded(int32 IncomingAttributePoints)
+{
+	OnAttributePointsAddedDelegate.Broadcast(IncomingAttributePoints);
+}
+
+void UAttributeMenuWidgetController::SubstractAttributePoint()
+{
+	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
+	AuraPlayerState->AddToAttributePoints(-1);
+}
+
+int32 UAttributeMenuWidgetController::GetAvailableAttributePoints()
+{
+	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
+	return AuraPlayerState->GetAttributePoints();
 }
 
 void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute) const
@@ -38,4 +70,21 @@ void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& 
 	FAuraAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(AttributeTag);
 	Info.AttributeValue = Attribute.GetNumericValue(AttributeSet);
 	AttributeInfoDelegate.Broadcast(Info);
+}
+
+void UAttributeMenuWidgetController::AddPointToAttribute(const FString& AttributeName) const
+{
+	UAuraAttributeSet* AS = CastChecked<UAuraAttributeSet>(AttributeSet);
+	/*FName TagName = FName(*AttributeName);
+	FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(TagName);*/
+	for (auto& Pair : AS->TagsToAttributes)
+	{
+		if (Pair.Key.ToString().Find(AttributeName) >= 0)
+		{
+			const FGameplayAttribute Attribute = Pair.Value();
+			AbilitySystemComponent->ApplyModToAttribute(Attribute, EGameplayModOp::Additive, 1);
+			IPlayerInterface::Execute_RecalculateSecondaryAttributes(AbilitySystemComponent->GetAvatarActor());
+		}
+	}
+	
 }

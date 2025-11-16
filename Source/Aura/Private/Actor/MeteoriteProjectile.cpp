@@ -6,6 +6,8 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystemComponent.h"
 
 
@@ -28,13 +30,15 @@ AMeteoriteProjectile::AMeteoriteProjectile()
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
 	ProjectileMovement->InitialSpeed = 400.f;
-	ProjectileMovement->MaxSpeed = 550.f;
+	ProjectileMovement->MaxSpeed = 500.f;
+	ProjectileMovement->bRotationFollowsVelocity = 1;
+	ProjectileMovement->ProjectileGravityScale = 0.1f;
 }
 
 void AMeteoriteProjectile::SetSphereRadius(float ChargeRatio)
 {
 	BlastRadius = FMath::Lerp(BlastRadius, MaxBlastRadius, ChargeRatio);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::SanitizeFloat(BlastRadius, 2));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::SanitizeFloat(BlastRadius, 2));
 }
 
 void AMeteoriteProjectile::BeginPlay()
@@ -43,10 +47,15 @@ void AMeteoriteProjectile::BeginPlay()
 	SetLifeSpan(LifeSpan);
 
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AMeteoriteProjectile::OnSphereOverlap);
+	LoopingSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopingSound, GetRootComponent());
 }
 
 void AMeteoriteProjectile::Destroyed()
 {
+	if (!bHit && !HasAuthority())
+	{
+		PlayImpact();
+	}
 	Super::Destroyed();
 }
 
@@ -62,14 +71,14 @@ void AMeteoriteProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
 	);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, DebugInfoString);*/
 
+	if (!DamageEffectSpecHandle.Data.IsValid()) return;
 
 	FGameplayEffectSpec* EffectSpec = DamageEffectSpecHandle.Data.Get();
 	auto Avatar = EffectSpec->GetEffectContext().GetEffectCauser();
 
 	FGameplayEffectSpec* PeriodicEffectSpec = PeriodicDamageEffectSpecHandle.Data.Get();
 
-	if (!DamageEffectSpecHandle.Data.IsValid() || Avatar == OtherActor ||
-		!UAuraAbilitySystemLibrary::IsNotFriend(OtherActor, Avatar)) 
+	if (Avatar == OtherActor || !UAuraAbilitySystemLibrary::IsNotFriend(OtherActor, Avatar)) 
 	{
 
 		/*FString DebugInfoString = FString::Printf(
@@ -88,9 +97,14 @@ void AMeteoriteProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
 
 	if (IsPendingKillPending())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PendingKill"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("PendingKill"));
 		return;
 
+	}
+
+	if (!bHit)
+	{
+		PlayImpact();
 	}
 
 	if (HasAuthority() && !bHit)
@@ -104,7 +118,7 @@ void AMeteoriteProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
 		);
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, SphereRadiusDebugString);*/
 
-		UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(Avatar, AffectedActors, IgnoredActors, Sphere->GetScaledSphereRadius(), GetActorLocation());
+		UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(Avatar, AffectedActors, IgnoredActors, BlastRadius, GetActorLocation());
 
 		for (AActor* AffectedActor : AffectedActors)
 		{
@@ -115,10 +129,24 @@ void AMeteoriteProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
 				//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("AppliedEffect"));
 			}
 		}
-		UKismetSystemLibrary::DrawDebugCircle(Avatar, GetActorLocation(), BlastRadius, 
-							12.f, FLinearColor::Black, /* Duration */ 2.f);
+		//UKismetSystemLibrary::DrawDebugCircle(Avatar, GetActorLocation(), BlastRadius, 
+		//					12.f, FLinearColor::Black, /* Duration */ 2.f);
 
 		Destroy();
 	}
 
+	else
+	{
+		bHit = true;
+	}
+}
+
+void AMeteoriteProjectile::PlayImpact()
+{
+	UGameplayStatics::PlaySoundAtLocation(this,
+		ImpactSound,
+		GetActorLocation(),
+		FRotator::ZeroRotator);
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
+	if (LoopingSoundComponent) LoopingSoundComponent->Stop();
 }

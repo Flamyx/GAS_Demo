@@ -7,7 +7,7 @@
 #include "Interaction/EnemyInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "Components/WidgetComponent.h"
-#include "AbilitySystem/Data/CharacterClassInfo.h"
+#include "GameplayEffect.h"
 #include "AuraEnemy.generated.h"
 
 class UBehaviorTree;
@@ -35,7 +35,7 @@ public:
 	/* End enemy interface */
 
 	/* Combat interface */
-	virtual int32 GetPlayerLevel() override;
+	virtual int32 GetPlayerLevel_Implementation() override;
 	virtual void Die() override;
 	virtual FTaggedMontage ChooseAttack_Implementation() override;
 	/* End combat interface */
@@ -66,6 +66,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 	TObjectPtr<AActor> CombatTarget;
 
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -75,8 +76,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
 	int32 Level = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
-	ECharacterClass CharacterClass = ECharacterClass::Warrior;
+	
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UWidgetComponent> HealthBar;

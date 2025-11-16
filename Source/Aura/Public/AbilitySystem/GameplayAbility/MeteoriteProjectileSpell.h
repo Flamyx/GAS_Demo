@@ -28,6 +28,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StartChargeTimeline();
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void CircleActorTick();
+
 	void ChargeTick();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

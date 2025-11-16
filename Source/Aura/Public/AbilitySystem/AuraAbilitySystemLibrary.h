@@ -32,6 +32,9 @@ public:
 	static void GiveStartupAbilities(const UObject* WorldContextObject, UAbilitySystemComponent* ASC, ECharacterClass CharacterClass);
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Character Class Defaults")
+	static UBehaviorTree* GetBehaviorTree(const UObject* WorldContextObject, ECharacterClass CharacterClass);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Character Class Defaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
@@ -52,4 +55,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Gameplay Mechanics")
 	static bool IsNotFriend(AActor* FirstActor, AActor* SecondActor);
+
+	static FGameplayTag FindAbilityTagFromSpec(FGameplayAbilitySpec AbilitySpec);
+
+	static FGameplayTag FindInputTagFromSpec(FGameplayAbilitySpec AbilitySpec);
+
+	static int32 GetXPReward(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
 };

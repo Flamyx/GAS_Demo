@@ -11,6 +11,8 @@
 #include "AI/AuraAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "GameplayEffectTypes.h"
+#include "Player/AuraPlayerState.h"
 
 AAuraEnemy::AAuraEnemy()
 {
@@ -44,12 +46,62 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	if (!HasAuthority()) return;
+	BehaviorTree = UAuraAbilitySystemLibrary::GetBehaviorTree(this, CharacterClass);
 	AuraAIController = Cast<AAuraAIController>(NewController);
 
 	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	AuraAIController->RunBehaviorTree(BehaviorTree);
 	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
-	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("RangedAttacker"), CharacterClass != ECharacterClass::Warrior);
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("RangedAttacker"), CharacterClass == ECharacterClass::Ranger);
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("MageAttacker"), CharacterClass == ECharacterClass::Elementalist);
+}
+
+//void AAuraEnemy::InitializeXPEffect()
+//{
+//	GrantXPEffect.DurationPolicy = EGameplayEffectDurationType::Instant;
+//
+//	FGameplayModifierInfo XPModifier;
+//	XPModifier.Attribute = UAuraAttributeSet::GetIncomingXPAttribute();
+//
+//	XPModifier.ModifierOp = EGameplayModOp::Additive;
+//
+//	FAttributeBasedFloat XPValue;
+//	XPValue.Coefficient = 1.f;
+//	XPValue.PostMultiplyAdditiveValue = 1.f;
+//	XPValue.PreMultiplyAdditiveValue = 1.f;
+//
+//	XPValue.AttributeCurve.CurveTable = XPRewardCurve;
+//	XPValue.AttributeCurve.RowName = "XP";
+//
+//	XPModifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(XPValue);
+//
+//	GrantXPEffect.Modifiers.Add(XPModifier);
+//}
+
+void AAuraEnemy::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
+	InitAbilityActorInfo();
+	if (HasAuthority())
+	{
+		UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent, CharacterClass);
+		if (BehaviorTree == nullptr)
+		{
+			BehaviorTree = UAuraAbilitySystemLibrary::GetBehaviorTree(this, CharacterClass);
+		}
+	}
+
+	UAuraUserWidget* Widget = Cast<UAuraUserWidget>(HealthBar->GetWidget());
+	Widget->SetWidgetController(this);
+
+	BindCallbacksToDependencies();
+	BroadcastInitialValues();
+
+	//InitializeXPEffect();
+
 }
 
 void AAuraEnemy::Die()
@@ -62,12 +114,22 @@ void AAuraEnemy::Die()
 	}
 }
 
+
 FTaggedMontage AAuraEnemy::ChooseAttack_Implementation()
 {
-	int AttackIndex = FMath::RandRange(0, TaggedMontages.Num() - 1);
-	const auto TaggedMontage = TaggedMontages[AttackIndex];
-	WeaponTipSocketName = TagToWeaponSocketName[TaggedMontage.SocketTag];
-	return TaggedMontage;
+	FString AttackSubstring = FString("attack");
+	for (int i = 0; i < 100; ++i)
+	{
+		int AttackIndex = FMath::RandRange(0, TaggedMontages.Num() - 1);
+		const auto TaggedMontage = TaggedMontages[AttackIndex];
+		if (TaggedMontage.MontageTag.ToString().Find(AttackSubstring) >= 0)
+		{
+			WeaponTipSocketName = TagToWeaponSocketName[TaggedMontage.SocketTag];
+			return TaggedMontage;
+		}
+	}
+
+	return FTaggedMontage();
 }
 
 void AAuraEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget)
@@ -91,26 +153,6 @@ FTaggedMontage AAuraEnemy::GetTaggedMontageByTag_Implementation(const FGameplayT
 	}
 
 	return FTaggedMontage();
-}
-
-void AAuraEnemy::BeginPlay()
-{
-	Super::BeginPlay();
-
-	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
-	
-	InitAbilityActorInfo();
-	if (HasAuthority()) 
-	{
-		UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent, CharacterClass);
-	}
-
-	UAuraUserWidget* Widget = Cast<UAuraUserWidget>(HealthBar->GetWidget());
-	Widget->SetWidgetController(this);
-
-	BindCallbacksToDependencies();
-	BroadcastInitialValues();
-
 }
 
 void AAuraEnemy::InitAbilityActorInfo()
@@ -142,7 +184,7 @@ void AAuraEnemy::UnHighlightActor()
 	Weapon->SetRenderCustomDepth(false);
 }
 
-int32 AAuraEnemy::GetPlayerLevel()
+int32 AAuraEnemy::GetPlayerLevel_Implementation()
 {
 	return Level;
 }
