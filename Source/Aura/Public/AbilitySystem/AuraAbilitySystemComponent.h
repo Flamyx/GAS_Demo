@@ -35,9 +35,13 @@ public:
 
 	void ForEachAbility(const FForEachAbility& Delegate);
 
+	void UpgradeAttribute(const FGameplayTag& AttributeTag);
+	UFUNCTION(Client, Reliable)
+	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
+
 protected:
 	virtual void OnRep_ActivateAbilities();
 
-	UFUNCTION(Client, Reliable)
+	UFUNCTION(Server, Reliable)
 	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle);
 };

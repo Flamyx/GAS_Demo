@@ -31,16 +31,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Level")
 	FOnPlayerStatChangedSignature OnAttributePointsAddedDelegate;
 
-	UPROPERTY(BlueprintAssignable, Category = "GAS|Level")
-	FOnPlayerStatChangedSignature OnSpellPointsAddedDelegate;
-
-	void OnSpellPointsAdded(int32 IncomingSpellPoints);
 	void OnAttributePointsAdded(int32 IncomingAttributePoints);
 
 	UFUNCTION(BlueprintCallable)
-	void SubstractAttributePoint();
-	UFUNCTION(BlueprintCallable)
-	int32 GetAvailableAttributePoints();
+	void UpgradeAttribute(const FGameplayTag& AttributeTag);
 
 protected:
 	UPROPERTY(EditDefaultsOnly)

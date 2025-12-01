@@ -7,6 +7,7 @@
 #include "AuraGameplayTags.h"
 #include "GameplayTagsManager.h"
 #include "Interaction/PlayerInterface.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 void UAttributeMenuWidgetController::BroadcastInitialValues()
 {
@@ -20,7 +21,6 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 
 	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
 	OnAttributePointsAddedDelegate.Broadcast(AuraPlayerState->GetAttributePoints());
-	OnSpellPointsAddedDelegate.Broadcast(AuraPlayerState->GetSpellPoints());
 }
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
@@ -39,13 +39,7 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 	}
 
 	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
-	AuraPlayerState->SpellPointsDelegate.AddUObject(this, &UAttributeMenuWidgetController::OnSpellPointsAdded);
 	AuraPlayerState->AttributePointsDelegate.AddUObject(this, &UAttributeMenuWidgetController::OnAttributePointsAdded);
-}
-
-void UAttributeMenuWidgetController::OnSpellPointsAdded(int32 IncomingSpellPoints)
-{
-	OnSpellPointsAddedDelegate.Broadcast(IncomingSpellPoints);
 }
 
 void UAttributeMenuWidgetController::OnAttributePointsAdded(int32 IncomingAttributePoints)
@@ -53,17 +47,23 @@ void UAttributeMenuWidgetController::OnAttributePointsAdded(int32 IncomingAttrib
 	OnAttributePointsAddedDelegate.Broadcast(IncomingAttributePoints);
 }
 
-void UAttributeMenuWidgetController::SubstractAttributePoint()
+void UAttributeMenuWidgetController::UpgradeAttribute(const FGameplayTag& AttributeTag)
 {
-	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
-	AuraPlayerState->AddToAttributePoints(-1);
+	UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
+	AuraASC->UpgradeAttribute(AttributeTag);
 }
 
-int32 UAttributeMenuWidgetController::GetAvailableAttributePoints()
-{
-	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
-	return AuraPlayerState->GetAttributePoints();
-}
+//void UAttributeMenuWidgetController::SubstractAttributePoint()
+//{
+//	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
+//	AuraPlayerState->AddToAttributePoints(-1);
+//}
+//
+//int32 UAttributeMenuWidgetController::GetAvailableAttributePoints()
+//{
+//	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
+//	return AuraPlayerState->GetAttributePoints();
+//}
 
 void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute) const
 {

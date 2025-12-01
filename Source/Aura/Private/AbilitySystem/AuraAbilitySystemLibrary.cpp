@@ -49,6 +49,24 @@ UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidge
 	return nullptr;
 }
 
+USpellMenuWidgetController* UAuraAbilitySystemLibrary::GetSpellMenuWidgetController(const UObject* WorldContextObject)
+{
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
+		{
+			AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+			USpellMenuWidgetController* SWC = AuraHUD->GetSpellMenuWidgetController(WidgetControllerParams);
+			return SWC;
+		}
+	}
+	return nullptr;
+}
+
 void UAuraAbilitySystemLibrary::InitializeEnemyAttributes(const UObject* WorldContextObject, ECharacterClass CharacterClass, float Level, UAbilitySystemComponent* ASC)
 {
 	auto CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);

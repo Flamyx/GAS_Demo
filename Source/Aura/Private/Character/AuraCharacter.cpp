@@ -110,6 +110,20 @@ void AAuraCharacter::RecalculateSecondaryAttributes_Implementation()
 	ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f);
 }
 
+int32 AAuraCharacter::GetAttributePoints_Implementation()
+{
+	AAuraPlayerState* PS = GetPlayerState<AAuraPlayerState>();
+	check(PS);
+	return PS->GetAttributePoints();
+}
+
+int32 AAuraCharacter::GetSpellPoints_Implementation()
+{
+	AAuraPlayerState* PS = GetPlayerState<AAuraPlayerState>();
+	check(PS);
+	return PS->GetSpellPoints();
+}
+
 void AAuraCharacter::MultiCastLevelUpParticles_Implementation() const
 {
 	if (IsValid(LevelUpComponent))
@@ -117,7 +131,6 @@ void AAuraCharacter::MultiCastLevelUpParticles_Implementation() const
 		LevelUpComponent->Activate(true);
 	}
 }
-
 
 int32 AAuraCharacter::GetPlayerLevel_Implementation()
 {

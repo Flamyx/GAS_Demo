@@ -6,10 +6,12 @@
 #include "UObject/NoExportTypes.h"
 #include "AttributeSet.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Data/AbilityInfo.h"
 #include "AuraWidgetController.generated.h"
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityWidgetCfg, FAuraAbilityInfo, Cfg);
 
 
 USTRUCT(BlueprintType)
@@ -47,6 +49,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();
 	virtual void BindCallbacksToDependencies();
+
+	//void OnInitializeStartupAbilities(UAuraAbilitySystemComponent* Aura_ASC);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category="WidgetController")

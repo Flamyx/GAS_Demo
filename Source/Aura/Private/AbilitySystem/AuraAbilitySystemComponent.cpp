@@ -5,6 +5,8 @@
 #include "AbilitySystem/GameplayAbility/AuraGameplayAbility.h"
 #include "AuraGameplayTags.h"
 #include "AuraLogChannels.h"
+#include "Interaction/PlayerInterface.h"
+#include "AbilitySystemBlueprintLibrary.h"
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
@@ -84,6 +86,27 @@ void UAuraAbilitySystemComponent::ForEachAbility(const FForEachAbility& Delegate
 			UE_LOG(LogAura, Error, TEXT("Failed to execute delegate in %hs"), __FUNCTION__);
 		}
 	}
+}
+
+void UAuraAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& AttributeTag)
+{
+	if (GetAvatarActor()->Implements<UPlayerInterface>())
+	{
+		if (IPlayerInterface::Execute_GetAttributePoints(GetAvatarActor()) > 0)
+		{
+			ServerUpgradeAttribute(AttributeTag);
+		}
+	}
+}
+
+void UAuraAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FGameplayTag& AttributeTag)
+{
+	FGameplayEventData Payload;
+	Payload.EventMagnitude = 1.f;
+	Payload.EventTag = AttributeTag;
+	
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetAvatarActor(), AttributeTag, Payload);
+	IPlayerInterface::Execute_AddToAttributePoints(GetAvatarActor(), -1);
 }
 
 void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()

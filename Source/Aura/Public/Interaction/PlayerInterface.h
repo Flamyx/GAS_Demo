@@ -44,6 +44,12 @@ public:
 	int32 GetSpellPointsReward(int32 inLevel);
 
 	UFUNCTION(BlueprintNativeEvent)
+	int32 GetAttributePoints();
+
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetSpellPoints();
+
+	UFUNCTION(BlueprintNativeEvent)
 	void LevelUp();
 
 	UFUNCTION(BlueprintNativeEvent)

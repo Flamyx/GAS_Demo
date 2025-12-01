@@ -39,7 +39,9 @@ public:
 	virtual int32 GetAttributePointsReward_Implementation(int32 inLevel) override;
 	virtual void LevelUp_Implementation();
 	virtual void RecalculateSecondaryAttributes_Implementation() override;
-	/* End combat interface */
+	virtual int32 GetAttributePoints_Implementation() override;
+	virtual int32 GetSpellPoints_Implementation() override;
+	/* End player interface */
 
 	/* Combat interface */
 	virtual int32 GetPlayerLevel_Implementation() override;
