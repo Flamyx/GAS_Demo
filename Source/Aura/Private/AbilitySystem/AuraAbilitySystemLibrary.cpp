@@ -9,6 +9,7 @@
 #include "Character/AuraEnemy.h"
 #include "AbilitySystemComponent.h"
 #include "Player/AuraPlayerState.h"
+#include "Engine/OverlapResult.h"
 #include "AuraAbilityTypes.h"
 
 UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetContoller(const UObject* WorldContextObject)

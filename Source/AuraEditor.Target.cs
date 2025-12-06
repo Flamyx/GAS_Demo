@@ -8,8 +8,9 @@ public class AuraEditorTarget : TargetRules
 	public AuraEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V4;
+		DefaultBuildSettings = BuildSettingsVersion.V6;
+		//bOverrideBuildEnvironment = true;
 
-		ExtraModuleNames.AddRange( new string[] { "Aura" } );
+        ExtraModuleNames.AddRange( new string[] { "Aura" } );
 	}
 }

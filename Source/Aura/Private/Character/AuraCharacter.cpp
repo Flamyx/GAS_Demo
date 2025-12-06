@@ -11,7 +11,7 @@ AAuraCharacter::AAuraCharacter()
 	LevelUpComponent->SetupAttachment(GetRootComponent());
 	LevelUpComponent->bAutoActivate = false;
 
-	GetCharacterMovement()->RotationRate - FRotator(0.f, 400.f, 0.f);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
