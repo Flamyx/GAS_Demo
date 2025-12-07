@@ -28,13 +28,13 @@ void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
 		if (const UAuraGameplayAbility* AuraAbility = Cast<UAuraGameplayAbility>(AbilitySpec.Ability))
 		{
-			AbilitySpec.DynamicAbilityTags.AddTag(AuraAbility->StartupInputTag);
+			AbilitySpec.GetDynamicSpecSourceTags().AddTag(AuraAbility->StartupInputTag);
 			GiveAbility(AbilitySpec);
 
 		}
 	}
 	bStartupAbilitiesGiven = true;
-	AbilitiesGiven.Broadcast(this);
+	AbilitiesGiven.Broadcast();
 }
 
 void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities)
@@ -52,7 +52,7 @@ void UAuraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputT
 
 	for (auto& AbilitySpec : GetActivatableAbilities())
 	{
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 		{
 			AbilitySpecInputPressed(AbilitySpec);
 			if (!AbilitySpec.IsActive())
@@ -69,7 +69,7 @@ void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& In
 
 	for (auto& AbilitySpec : GetActivatableAbilities())
 	{
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 		{
 			AbilitySpecInputReleased(AbilitySpec);
 		}
@@ -116,7 +116,7 @@ void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
 	if (!bStartupAbilitiesGiven)
 	{
 		bStartupAbilitiesGiven = true;
-		AbilitiesGiven.Broadcast(this);
+		AbilitiesGiven.Broadcast();
 	}
 }
 

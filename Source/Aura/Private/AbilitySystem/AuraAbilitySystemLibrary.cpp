@@ -198,7 +198,7 @@ FGameplayTag UAuraAbilitySystemLibrary::FindAbilityTagFromSpec(FGameplayAbilityS
 {
 	if (AbilitySpec.Ability)
 	{
-		for (auto Tag : AbilitySpec.Ability.Get()->AbilityTags)
+		for (auto Tag : AbilitySpec.Ability.Get()->GetAssetTags())
 		{
 			if (Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Abilities"))))
 				return Tag;
@@ -211,7 +211,7 @@ FGameplayTag UAuraAbilitySystemLibrary::FindInputTagFromSpec(FGameplayAbilitySpe
 {
 	if (AbilitySpec.Ability) 
 	{
-		for (auto Tag : AbilitySpec.DynamicAbilityTags)
+		for (auto Tag : AbilitySpec.GetDynamicSpecSourceTags())
 		{
 			if (Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("InputTag"))))
 				return Tag;

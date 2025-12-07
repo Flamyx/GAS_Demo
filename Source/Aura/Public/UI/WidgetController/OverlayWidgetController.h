@@ -55,8 +55,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
-	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
-	FAbilityWidgetCfg AbilityCfgDelegate;
+	
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|XP")
 	FOnAttributeChangedSignature OnXPChangedDelegate;
@@ -73,9 +72,6 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Info")
-	TObjectPtr<UAbilityInfo> AbilityInfo;
 
 	void MaxManaChanged(const FOnAttributeChangeData& Data) const;
 

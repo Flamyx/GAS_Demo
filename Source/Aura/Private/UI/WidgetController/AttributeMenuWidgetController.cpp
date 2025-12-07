@@ -49,8 +49,7 @@ void UAttributeMenuWidgetController::OnAttributePointsAdded(int32 IncomingAttrib
 
 void UAttributeMenuWidgetController::UpgradeAttribute(const FGameplayTag& AttributeTag)
 {
-	UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
-	AuraASC->UpgradeAttribute(AttributeTag);
+	GetAuraASC()->UpgradeAttribute(AttributeTag);
 }
 
 //void UAttributeMenuWidgetController::SubstractAttributePoint()

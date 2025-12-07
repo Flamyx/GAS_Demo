@@ -51,12 +51,12 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		AuraAttributeSet->GetMaxManaAttribute()).AddUObject(this, &UOverlayWidgetController::MaxManaChanged);*/
 
-	if (auto AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
+	if (GetAuraASC())
 	{
 		if (!AuraASC->bStartupAbilitiesGiven)
-			AuraASC->AbilitiesGiven.AddUObject(this, &UOverlayWidgetController::OnInitializeStartupAbilities);
+			AuraASC->AbilitiesGiven.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
 		else
-			OnInitializeStartupAbilities(AuraASC);
+			BroadcastAbilityInfo();
 
 		AuraASC->EffectAssetTags.AddLambda(
 			[this](const FGameplayTagContainer& AssetTags)
