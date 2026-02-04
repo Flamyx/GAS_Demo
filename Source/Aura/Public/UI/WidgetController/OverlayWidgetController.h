@@ -55,19 +55,11 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
-	
-
 	UPROPERTY(BlueprintAssignable, Category = "GAS|XP")
 	FOnAttributeChangedSignature OnXPChangedDelegate;
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Level")
 	FOnPlayerStatChangedSignature OnPlayerLevelChangedDelegate;
-
-	UPROPERTY(BlueprintAssignable, Category = "GAS|Level")
-	FOnAttributeChangedSignature OnSpellPointsAddedDelegate;
-
-	UPROPERTY(BlueprintAssignable, Category = "GAS|Level")
-	FOnAttributeChangedSignature OnAttributePointsAddedDelegate;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
@@ -77,8 +69,6 @@ protected:
 
 	template<typename T>
 	T* GetDataTableByRow(UDataTable* DataTable, const FGameplayTag& Tag);
-
-	void OnInitializeStartupAbilities(UAuraAbilitySystemComponent* Aura_ASC);
 
 	void OnXPChanged(int32 newXP);
 	void OnLvlUp(const FLevelUpInfo& LvlUpInfo);

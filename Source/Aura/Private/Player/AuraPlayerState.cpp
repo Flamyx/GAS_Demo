@@ -3,6 +3,8 @@
 
 #include "Player/AuraPlayerState.h"
 #include "Net/UnrealNetwork.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
+
 
 AAuraPlayerState::AAuraPlayerState()
 {
@@ -12,7 +14,7 @@ AAuraPlayerState::AAuraPlayerState()
 
 	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");
 
-	NetUpdateFrequency = 100.f;
+	SetNetUpdateFrequency(100.f);
 }
 
 void AAuraPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -57,6 +59,7 @@ void AAuraPlayerState::GrantXP(int32 IncomingXP)
 void AAuraPlayerState::AddToLevel(int32 NumLevelUps)
 {
 	SetLevel(NumLevelUps + Level);
+	LevelUP();
 }
 
 void AAuraPlayerState::SetLevel(int32 IncomingLevel)
@@ -76,6 +79,10 @@ void AAuraPlayerState::AddToSpellPoints(int32 IncomingSpellPoints)
 {
 	SpellPoints += IncomingSpellPoints;
 	SpellPointsDelegate.Broadcast(SpellPoints);
+}
+
+void AAuraPlayerState::LevelUP()
+{
 }
 
 FLevelUpInfo AAuraPlayerState::FindLevelInfo()

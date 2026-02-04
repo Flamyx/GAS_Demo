@@ -64,7 +64,7 @@ UAuraAttributeSet* UAuraWidgetController::GetAuraAS()
 	return AuraAS;
 }
 
-void UAuraWidgetController::BroadcastAbilityInfo()
+void UAuraWidgetController:: BroadcastAbilityInfo()
 {
 	if (!GetAuraASC()->bStartupAbilitiesGiven)
 		return;
@@ -73,9 +73,18 @@ void UAuraWidgetController::BroadcastAbilityInfo()
 	BroadcastDelegate.BindLambda([this](const FGameplayAbilitySpec& AbilitySpec)
 		{
 			FGameplayTag AbilityTag = UAuraAbilitySystemLibrary::FindAbilityTagFromSpec(AbilitySpec);
-			FAuraAbilityInfo AbilityCfg = AbilityInfo->GetAbilityInfo(AbilityTag);
-			AbilityCfg.InputTag = UAuraAbilitySystemLibrary::FindInputTagFromSpec(AbilitySpec);
-			AbilityCfgDelegate.Broadcast(AbilityCfg);
+			auto AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAuraPS());
+			if (!AbilityInfo)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 150, FColor::Red, "No Ability Info Found");
+			}
+			else
+			{
+				FAuraAbilityInfo AbilityCfg = AbilityInfo->GetAbilityInfo(AbilityTag);
+				AbilityCfg.InputTag = UAuraAbilitySystemLibrary::FindInputTagFromSpec(AbilitySpec);
+				AbilityCfg.StatusTag = UAuraAbilitySystemLibrary::FindStatusTagFromSpec(AbilitySpec);
+				AbilityCfgDelegate.Broadcast(AbilityCfg);
+			}
 		});
 
 	AuraASC->ForEachAbility(BroadcastDelegate);

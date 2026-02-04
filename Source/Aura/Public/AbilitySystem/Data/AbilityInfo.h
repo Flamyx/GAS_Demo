@@ -6,7 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/GameplayAbility/AuraGameplayAbility.h"
-#include "GameplayAbilitySpec.h"
+
 #include "AbilityInfo.generated.h"
 
 USTRUCT(BlueprintType)
@@ -22,6 +22,12 @@ struct FAuraAbilityInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag CooldownTag = FGameplayTag();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag StatusTag = FGameplayTag();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag TypeTag = FGameplayTag();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<const UTexture2D> Image = nullptr;
@@ -33,7 +39,10 @@ struct FAuraAbilityInfo
 	FString Description = FString();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UCurveTable> SpellUpgradeRequirement;
+	int32 LevelRequirement;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UGameplayAbility> Ability;
 };
 
 /**
@@ -47,6 +56,6 @@ class AURA_API UAbilityInfo : public UDataAsset
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Info")
 	TArray<FAuraAbilityInfo> AbilityInfos;
-
+	
 	FAuraAbilityInfo GetAbilityInfo(const FGameplayTag& GameplayTag);
 };

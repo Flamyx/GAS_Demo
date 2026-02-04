@@ -3,19 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AttributeSet.h"
-#include "AbilitySystemComponent.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "AuraWidgetController.generated.h"
 
 class AAuraPlayerController;
 class AAuraPlayerState;
-class UAuraAbilitySystemComponent;
 class UAuraAttributeSet;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityWidgetCfg, FAuraAbilityInfo, Cfg);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSpellEquippedSWC);
 
 
 USTRUCT(BlueprintType)
@@ -58,11 +57,14 @@ public:
 	AAuraPlayerState* GetAuraPS();
 	UAuraAbilitySystemComponent* GetAuraASC();
 	UAuraAttributeSet* GetAuraAS();
-
+	
 	void BroadcastAbilityInfo();
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FAbilityWidgetCfg AbilityCfgDelegate;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnSpellEquippedSWC EquippedSpellDelegate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category="WidgetController")
@@ -88,7 +90,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAuraAttributeSet> AuraAS;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Info")
-	TObjectPtr<UAbilityInfo> AbilityInfo;
+	
+	UFUNCTION()
+	void BroadcastEquippedSpell() { EquippedSpellDelegate.Broadcast(); }
 };

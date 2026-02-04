@@ -172,10 +172,17 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Cooldown"),
 		FString("Tag granted when ability is used")
 	);
+	
+	
 
 	/*
 	Abilities
 	*/
+	
+	GameplayTags.Abilities_None= UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.None"),
+		FString("Empty Ability Tag")
+	);
 
 	GameplayTags.Abilities_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Abilities.Attack"),
@@ -197,6 +204,48 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Meteorite Ability Tag")
 	);
 
+	GameplayTags.Abilities_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Lightning.Electrocute"),
+		FString("Electrocute Ability Tag")
+	);
+	
+	GameplayTags.Abilities_Passive_AuraBuff = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Passive.AuraBuff"),
+		FString("AuraBuff Ability Tag")
+	);
+	
+	GameplayTags.AbilityType_Passive = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("AbilityType.Passive"),
+		FString("Passive Ability Tag")
+	);
+	
+	GameplayTags.AbilityType_Offensive = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("AbilityType.Offensive"),
+		FString("Offensive Ability Tag")
+	);
+	
+	
+	GameplayTags.Status_Eligible = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Eligible"),
+		FString("Eligible Ability Tag")
+	);
+	
+	GameplayTags.Status_Equipped = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Equipped"),
+		FString("Equipped Ability Tag")
+	);
+	
+	GameplayTags.Status_Unlocked = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Unlocked"),
+		FString("Unlocked Ability Tag")
+	);
+	
+	GameplayTags.Status_Locked = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Locked"),
+		FString("Locked Ability Tag")
+	);
+
+
 	/*
 	Cooldown Tags
 	*/
@@ -208,6 +257,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Cooldown_Fire_Meteorite = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Cooldown.Fire.Meteorite"),
 		FString("Meteorite Ability Cooldown Tag")
+	);
+
+	GameplayTags.Cooldown_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Cooldown.Lightning.Electrocute "),
+		FString("Electrocute  Ability Cooldown Tag")
 	);
 
 	/*

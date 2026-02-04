@@ -3,3 +3,49 @@
 
 #include "AbilitySystem/GameplayAbility/AuraGameplayAbility.h"
 
+#include "AbilitySystem/AuraAttributeSet.h"
+
+FString UAuraGameplayAbility::GetDescription(int32 Level, float Damage, const FString& Title)
+{
+	
+	float ManaCost = GetManaCost(Level);
+	float Cooldown = GetCooldown(Level);
+
+	return FString::Printf(TEXT("<Title>%s</>\n<Default> Level </><Level> %d</> \n <Default>Damage: </><Damage>%.1f</> \n <Default>Cooldown:</><Cooldown>%.1f </>\n <Default>Mana Cost: </><ManaCost>%.1f</>"), *Title, Level, Damage, Cooldown, ManaCost); 
+}
+
+FString UAuraGameplayAbility::GetNextLevelDescription(int32 Level, float Damage)
+{
+	return FString::Printf(TEXT("<Default> Level </><Level>%d</>\n <Damage> Damage: %.1f</>"), Level, Damage);
+}
+
+FString UAuraGameplayAbility::GetLockedDescription(int32 Level)
+{
+	return FString::Printf(TEXT("<Default> Ability locked until level </> <Level>%d</>"), Level);
+}
+
+float UAuraGameplayAbility::GetManaCost(float Level) const
+{
+	float ManaCost = 0;
+	if (auto CostGE = GetCostGameplayEffect())
+	{
+		for (auto Modifier: CostGE->Modifiers)
+		{
+			if (Modifier.Attribute == UAuraAttributeSet::GetManaAttribute())
+			{
+				const bool bSuccess = Modifier.ModifierMagnitude.GetStaticMagnitudeIfPossible(Level, ManaCost);
+			}
+		}
+	}
+	return ManaCost;
+}
+
+float UAuraGameplayAbility::GetCooldown(float Level) const
+{
+	float Cooldown = 0;
+	if (auto CooldownGE = GetCooldownGameplayEffect())
+	{
+		return CooldownGE->DurationMagnitude.GetStaticMagnitudeIfPossible(Level, Cooldown);
+	}
+	return Cooldown;
+}

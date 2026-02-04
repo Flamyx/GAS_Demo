@@ -4,9 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Character/AuraCharacterBase.h"
-#include "Player/AuraPlayerState.h"
-#include "Player/AuraPlayerController.h"
-#include "UI/Overlay/AuraHUD.h"
 #include "Interaction/PlayerInterface.h"
 #include "AuraCharacter.generated.h"
 
@@ -34,10 +31,11 @@ public:
 	virtual void AddToSpellPoints_Implementation(int32 inSpellPoints) override;
 	virtual void AddToAttributePoints_Implementation(int32 inAttributePoints) override;
 	virtual int32 GetXP_Implementation() override;
+	virtual int32 GetLevel_Implementation() override;
 	virtual int32 FindLevelForXP_Implementation(float inXP) override;
 	virtual int32 GetSpellPointsReward_Implementation(int32 inLevel) override;
 	virtual int32 GetAttributePointsReward_Implementation(int32 inLevel) override;
-	virtual void LevelUp_Implementation();
+	virtual void LevelUp_Implementation() override;
 	virtual void RecalculateSecondaryAttributes_Implementation() override;
 	virtual int32 GetAttributePoints_Implementation() override;
 	virtual int32 GetSpellPoints_Implementation() override;
@@ -52,9 +50,7 @@ private:
 	TObjectPtr<UNiagaraComponent> LevelUpComponent;
 
 	virtual void InitAbilityActorInfo() override;
-
-	void BindToLevelUp();
-
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastLevelUpParticles() const;
 };

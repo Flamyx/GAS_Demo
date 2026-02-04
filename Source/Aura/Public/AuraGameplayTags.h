@@ -57,14 +57,26 @@ public:
 	FGameplayTag Abilities_Summon;
 	FGameplayTag Abilities_Fire_FireBolt;
 	FGameplayTag Abilities_Fire_Meteorite;
+	FGameplayTag Abilities_Lightning_Electrocute;
+	FGameplayTag Abilities_Passive_AuraBuff;
+	FGameplayTag Abilities_None;
+	
+	FGameplayTag AbilityType_Passive;
+	FGameplayTag AbilityType_Offensive;
 
 	FGameplayTag Cooldown_Fire_FireBolt;
 	FGameplayTag Cooldown_Fire_Meteorite;
+	FGameplayTag Cooldown_Lightning_Electrocute;
 
 	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
 
 	FGameplayTag HitReact;
 	FGameplayTag Cooldown;
+	
+	FGameplayTag Status_Equipped;
+	FGameplayTag Status_Unlocked;
+	FGameplayTag Status_Eligible;
+	FGameplayTag Status_Locked;
 
 	FGameplayTag CombatSocket_Weapon;
 	FGameplayTag CombatSocket_RightHand;

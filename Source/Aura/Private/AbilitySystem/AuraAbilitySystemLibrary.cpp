@@ -68,6 +68,38 @@ USpellMenuWidgetController* UAuraAbilitySystemLibrary::GetSpellMenuWidgetControl
 	return nullptr;
 }
 
+bool UAuraAbilitySystemLibrary::UpdateOverlay(const UObject* WorldContextObject)
+{
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
+		{
+			AuraHUD->UpdateOverlay();
+			return true;
+		}
+	}
+	return false;
+}
+
+FGameplayTag UAuraAbilitySystemLibrary::FindInputTagFromAbilityInfo(const UObject* WorldContextObject, const FGameplayTag& AbilityTag)
+{
+	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AuraGameMode == nullptr) return FGameplayTag();
+	auto AbilityInfo = AuraGameMode->AbilityInfo;
+	return AbilityInfo->GetAbilityInfo(AbilityTag).InputTag;
+}
+
+FGameplayTag UAuraAbilitySystemLibrary::FindStatusTagFromAbilityInfo(const UObject* WorldContextObject,
+	const FGameplayTag& AbilityTag)
+{
+	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AuraGameMode == nullptr) return FGameplayTag();
+	auto AbilityInfo = AuraGameMode->AbilityInfo;
+	
+	return AbilityInfo->GetAbilityInfo(AbilityTag).StatusTag;
+
+}
+
 void UAuraAbilitySystemLibrary::InitializeEnemyAttributes(const UObject* WorldContextObject, ECharacterClass CharacterClass, float Level, UAbilitySystemComponent* ASC)
 {
 	auto CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
@@ -98,6 +130,7 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
 		ASC->GiveAbility(AbilitySpec);
+		
 	}
 
 	const FCharacterClassDefaultInfo DefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
@@ -111,7 +144,7 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	}
 }
 
-int32 UAuraAbilitySystemLibrary::GetXPReward(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel)
+float UAuraAbilitySystemLibrary::GetXPReward(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel)
 {
 	auto CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
 	if (CharacterClassInfo == nullptr) 
@@ -120,7 +153,7 @@ int32 UAuraAbilitySystemLibrary::GetXPReward(const UObject* WorldContextObject, 
 	auto Info = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
 	const float XPReward = Info.XPReward.GetValueAtLevel(CharacterLevel);
 
-	return static_cast<int32>(XPReward);
+	return XPReward;
 }
 
 UBehaviorTree* UAuraAbilitySystemLibrary::GetBehaviorTree(const UObject* WorldContextObject, ECharacterClass CharacterClass)
@@ -137,6 +170,14 @@ UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObj
 	if (AuraGameMode == nullptr) return nullptr;
 	auto CharacterClassInfo = AuraGameMode->CharacterClassInfo;
 	return CharacterClassInfo;
+}
+
+UAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldContextObject)
+{
+	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AuraGameMode == nullptr) return nullptr;
+	auto AbilityInfo = AuraGameMode->AbilityInfo;
+	return AbilityInfo;
 }
 
 bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
@@ -166,9 +207,9 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 	AActor* MutableSourceActor = const_cast<AActor*>(SourceActor);
 
 	// query scene to see what we hit
-	TArray<FOverlapResult> Overlaps;
 	if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
 	{
+		TArray<FOverlapResult> Overlaps;
 		World->OverlapMultiByObjectType(Overlaps, SphereOrigin, FQuat::Identity, 
 			FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects), 
 			FCollisionShape::MakeSphere(Radius), SphereParams);
@@ -194,7 +235,7 @@ bool UAuraAbilitySystemLibrary::IsNotFriend(AActor* FirstActor, AActor* SecondAc
 	return !bFriendly;
 }
 
-FGameplayTag UAuraAbilitySystemLibrary::FindAbilityTagFromSpec(FGameplayAbilitySpec AbilitySpec)
+FGameplayTag UAuraAbilitySystemLibrary::FindAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
 {
 	if (AbilitySpec.Ability)
 	{
@@ -207,7 +248,7 @@ FGameplayTag UAuraAbilitySystemLibrary::FindAbilityTagFromSpec(FGameplayAbilityS
 	return FGameplayTag();
 }
 
-FGameplayTag UAuraAbilitySystemLibrary::FindInputTagFromSpec(FGameplayAbilitySpec AbilitySpec)
+FGameplayTag UAuraAbilitySystemLibrary::FindInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
 {
 	if (AbilitySpec.Ability) 
 	{
@@ -217,7 +258,16 @@ FGameplayTag UAuraAbilitySystemLibrary::FindInputTagFromSpec(FGameplayAbilitySpe
 				return Tag;
 		}
 	}
+	return FGameplayTag();
+}
 
+FGameplayTag UAuraAbilitySystemLibrary::FindStatusTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	for (auto StatusTag: AbilitySpec.GetDynamicSpecSourceTags())
+	{
+		if (StatusTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Status"))))
+			return StatusTag;
+	}
 	return FGameplayTag();
 }
 

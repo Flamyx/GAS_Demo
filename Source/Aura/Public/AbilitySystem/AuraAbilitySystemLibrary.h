@@ -7,6 +7,7 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+class UAbilityInfo;
 class UOverlayWidgetController;
 class UAttributeMenuWidgetController;
 class USpellMenuWidgetController;
@@ -28,6 +29,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|WidgetController")
 	static USpellMenuWidgetController* GetSpellMenuWidgetController(const UObject* WorldContextObject);
+	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|WidgetController")
+	static bool UpdateOverlay(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Character Class Defaults")
 	static void InitializeEnemyAttributes(const UObject* WorldContextObject, ECharacterClass CharacterClass, float Level, UAbilitySystemComponent* ASC);
@@ -40,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Character Class Defaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
+	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Character Class Defaults")
+	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
 	static bool IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle);
@@ -60,9 +67,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Gameplay Mechanics")
 	static bool IsNotFriend(AActor* FirstActor, AActor* SecondActor);
 
-	static FGameplayTag FindAbilityTagFromSpec(FGameplayAbilitySpec AbilitySpec);
+	static FGameplayTag FindAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 
-	static FGameplayTag FindInputTagFromSpec(FGameplayAbilitySpec AbilitySpec);
+	static FGameplayTag FindInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+	
+	static FGameplayTag FindStatusTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+	
+	static FGameplayTag FindInputTagFromAbilityInfo(const UObject* WorldContextObject, const FGameplayTag& AbilityTag);
+	
+	static FGameplayTag FindStatusTagFromAbilityInfo(const UObject* WorldContextObject, const FGameplayTag& AbilityTag);
 
-	static int32 GetXPReward(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
+	static float GetXPReward(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
 };

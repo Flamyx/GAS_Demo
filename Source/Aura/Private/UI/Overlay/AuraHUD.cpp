@@ -57,3 +57,9 @@ void AAuraHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySyst
 
 	Widget->AddToViewport();
 }
+
+void AAuraHUD::UpdateOverlay()
+{
+	UOverlayWidgetController* WidgetController = CastChecked<UOverlayWidgetController>(OverlayWidget->WidgetController);
+	WidgetController->BroadcastAbilityInfo();
+}
