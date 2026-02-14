@@ -6,6 +6,10 @@
 #include "AbilitySystem/GameplayAbility/AuraGameplayAbility.h"
 #include "AuraBuffAbility.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAuraBuffStatus, bool, bIsBuff);
+
+class UNiagaraComponent;
+
 /**
  * 
  */
@@ -19,13 +23,19 @@ public:
 	TMap<FGameplayTag, FScalableFloat> ResistancesToBuffs;
 	
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	
 protected:
 	UFUNCTION(BlueprintCallable)
 	void ModifyResistances(bool bNegate = false);
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> BuffEffect;
-private:
-	FActiveGameplayEffectHandle BuffHandle;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> DebuffEffect;
+	
+	UPROPERTY(BlueprintAssignable)
+	FAuraBuffStatus BuffStatusDelegate;
+
+	
 };

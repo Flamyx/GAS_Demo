@@ -30,7 +30,13 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Pair.Value()).AddLambda(
 			[this, Pair](const FOnAttributeChangeData& Data)
 			{
-				BroadcastAttributeInfo(Pair.Key, Pair.Value());
+				auto val = Pair.Value();
+				BroadcastAttributeInfo(Pair.Key, val);
+				if (Pair.Key.MatchesTag(FGameplayTag::RequestGameplayTag("Attributes.Primary")))
+				{
+					IPlayerInterface::Execute_RecalculateSecondaryAttributes(GetAuraASC()->GetAvatarActor());
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,TEXT("RECALC SECONDARY"));
+				}
 			}
 		);
 	}

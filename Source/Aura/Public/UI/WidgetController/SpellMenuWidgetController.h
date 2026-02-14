@@ -6,15 +6,15 @@
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "SpellMenuWidgetController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FCanEquipOrSpendPointsDelegate, bool, bCanEquip, bool, bCanSpend, const FString&, Description, const FString&, NextDescription);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSpellButtonClickedDelegate);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FCanEquipOrSpendPoints, bool, bCanEquip, bool, bCanSpend, const FString&, Description, const FString&, NextDescription);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpellDeselect, const FGameplayTag&, AbilityTag);
 
 struct FSelectedAbility
 {
 	FGameplayTag AbilityTag;
 	FGameplayTag StatusTag;
 	FGameplayTag InputTag;
+	FGameplayTag AbilityTypeTag;
 };
 
 /**
@@ -33,7 +33,7 @@ public:
 	FOnPlayerStatChangedSignature OnSpellPointsAddedDelegate;
 	
 	UPROPERTY(BlueprintAssignable)
-	FCanEquipOrSpendPointsDelegate OnCanEquipOrSpendPointsDelegate;
+	FCanEquipOrSpendPoints OnCanEquipOrSpendPointsDelegate;
 	
 	UFUNCTION(BlueprintCallable)
 	void UpgradeSpell();
@@ -50,16 +50,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnInputGlobeClicked(const FGameplayTag& InputTag);
 	
+	UFUNCTION(BlueprintCallable)
+	void OnEquipButtonPressed();
 	
-	FOnSpellButtonClickedDelegate OnSpellButtonClickedDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FOnSpellDeselect OnSpellDeselectedDelegate;
 
 protected:
 	UPROPERTY(BlueprintReadWrite)
 	int32 AvailableSpellPoints;
+	
+	void SpellEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& Slot, const FGameplayTag& PrevSlot);
 
 private:
 	void OnSpellPointsAdded(int32 IncomingSpellPoints);
 	
 	FSelectedAbility SelectedAbility;
 	
+	FGameplayTag SelectedSlot;
+	bool bWaitingForSpellInput = false;
 };

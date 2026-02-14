@@ -185,38 +185,35 @@ void UAuraAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FG
 	IPlayerInterface::Execute_AddToAttributePoints(GetAvatarActor(), -1);
 }
 
-void UAuraAbilitySystemComponent::EquipSpell(const FGameplayTag &InputTag, const FGameplayTag& SpellTag)
-{
-	ServerEquipSpell(InputTag, SpellTag);
-}
-
-
 void UAuraAbilitySystemComponent::ServerEquipSpell_Implementation(const FGameplayTag& InputTag,
 	const FGameplayTag& AbilityTag)
 {
 	auto AbilitySpec = GetSpecFromAbilityTag(AbilityTag);
-	// Assuming you have an FGameplayTagContainer& TagsContainer
-	FGameplayTag ParentTag = FGameplayTag::RequestGameplayTag("InputTag");
-	TArray<FGameplayTag> TagsToRemove;
-
-	// 1. Collect all tags that match the parent
-	for (const FGameplayTag& Tag : AbilitySpec->GetDynamicSpecSourceTags())
+	auto Status = UAuraAbilitySystemLibrary::FindStatusTagFromSpec(*AbilitySpec);
+	auto PrevSlot = UAuraAbilitySystemLibrary::FindInputTagFromSpec(*AbilitySpec);
+	
+	FString text = FString::Printf(TEXT("Ability %s, Status %s, Prev Tag %s"), *AbilityTag.ToString(), *Status.ToString(), *PrevSlot.ToString());
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, text);
+	ClearAbilitiesOfSlot(InputTag);
+	ClearSlot(AbilitySpec);
+	
+	AbilitySpec->GetDynamicSpecSourceTags().AddTag(InputTag);
+	
+	if (Status.MatchesTagExact(FAuraGameplayTags::Get().Status_Unlocked))
 	{
-		if (Tag.MatchesTag(ParentTag) || Tag.MatchesTag(FGameplayTag::RequestGameplayTag("Status")))
-		{
-			TagsToRemove.Add(Tag);
-		}
+		AbilitySpec->GetDynamicSpecSourceTags().RemoveTag(FAuraGameplayTags::Get().Status_Unlocked);
+		Status = FGameplayTag::RequestGameplayTag("Status.Equipped");
+		AbilitySpec->GetDynamicSpecSourceTags().AddTag(Status);
 	}
 	
-	// 2. Remove the collected tags
-	for (const FGameplayTag& Tag : TagsToRemove)
-	{
-		AbilitySpec->GetDynamicSpecSourceTags().RemoveTag(Tag);
-	}
-	AbilitySpec->GetDynamicSpecSourceTags().AddTag(InputTag);
-	AbilitySpec->GetDynamicSpecSourceTags().AddTag(FGameplayTag::RequestGameplayTag("Status.Equipped"));
 	MarkAbilitySpecDirty(*AbilitySpec);
-	OnSpellEquipped.Broadcast();
+	ClientEquipSpell(PrevSlot, InputTag, AbilityTag, Status);
+}
+
+void UAuraAbilitySystemComponent::ClientEquipSpell_Implementation(const FGameplayTag& PrevSlot,
+	const FGameplayTag& Slot, const FGameplayTag& AbilityTag, const FGameplayTag& Status)
+{
+	SpellEquippedDelegate.Broadcast(AbilityTag, Status, Slot, PrevSlot);
 }
 
 void UAuraAbilitySystemComponent::UpdateAbilities(int32 Level)
@@ -298,6 +295,36 @@ void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
 		bStartupAbilitiesGiven = true;
 		AbilitiesGiven.Broadcast();
 	}
+}
+
+void UAuraAbilitySystemComponent::ClearAbilitiesOfSlot(const FGameplayTag& SlotTag)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		bool bHasTag = false;
+		for (auto Tag: AbilitySpec.GetDynamicSpecSourceTags())
+		{
+			if (Tag.MatchesTagExact(SlotTag))
+			{
+				bHasTag = true;
+			}
+		}
+		if (bHasTag)
+		{
+			ClearSlot(&AbilitySpec);
+		}
+	}
+}
+
+void UAuraAbilitySystemComponent::ClearSlot(FGameplayAbilitySpec* AbilitySpec)
+{
+	auto Slot = UAuraAbilitySystemLibrary::FindInputTagFromSpec(*AbilitySpec);
+	AbilitySpec->GetDynamicSpecSourceTags().RemoveTag(Slot);
+	//AbilitySpec->GetDynamicSpecSourceTags().RemoveTag(FAuraGameplayTags::Get().Status_Equipped);
+	FString text = FString::Printf(TEXT("Removing Slot Ability %s, Prev Tag %s"), *UAuraAbilitySystemLibrary::FindAbilityTagFromSpec(*AbilitySpec).ToString(), *Slot.ToString());
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, text);
+	MarkAbilitySpecDirty(*AbilitySpec);
 }
 
 void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle)

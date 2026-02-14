@@ -9,6 +9,8 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Interaction/CombatInterface.h"
 #include "AuraAbilityTypes.h"
+#include "GameplayEffectComponents/AdditionalEffectsGameplayEffectComponent.h"
+#include "GameplayEffectComponents/AbilitiesGameplayEffectComponent.h"
 
 struct AuraDamageStatics
 {
@@ -79,6 +81,8 @@ UExecCalc_Damage::UExecCalc_Damage()
 
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
+	UAbilitiesGameplayEffectComponent
+	//UAdditionalEffectsGameplayEffectComponent::
 	const UAbilitySystemComponent* SourceASC = ExecutionParams.GetSourceAbilitySystemComponent();
 	const UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
 

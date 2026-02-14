@@ -20,10 +20,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CauseDamage(AActor* TargetActor);
 	
-	//virtual FString GetDescription(int32 Level, float Damage, const FString& Title) override;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	TMap<FGameplayTag, FScalableFloat> DamageTypes;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float DebuffChance = 20.f;
+	UPROPERTY(EditDefaultsOnly)
+	float DebuffDamage = 5.f;
+	UPROPERTY(EditDefaultsOnly)
+	float DebuffFrequency = 1.f;
+	UPROPERTY(EditDefaultsOnly)
+	float DebuffDuration = 4.f;
+	
+	
 protected: 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> DamageEffectClass;

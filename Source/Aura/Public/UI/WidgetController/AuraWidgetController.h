@@ -14,7 +14,6 @@ class UAuraAttributeSet;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityWidgetCfg, FAuraAbilityInfo, Cfg);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSpellEquippedSWC);
 
 
 USTRUCT(BlueprintType)
@@ -62,9 +61,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FAbilityWidgetCfg AbilityCfgDelegate;
-	
-	UPROPERTY(BlueprintAssignable)
-	FOnSpellEquippedSWC EquippedSpellDelegate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category="WidgetController")
@@ -90,7 +86,5 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAuraAttributeSet> AuraAS;
-	
-	UFUNCTION()
-	void BroadcastEquippedSpell() { EquippedSpellDelegate.Broadcast(); }
+
 };

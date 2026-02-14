@@ -11,6 +11,7 @@
 #include "Player/AuraPlayerState.h"
 #include "Engine/OverlapResult.h"
 #include "AuraAbilityTypes.h"
+#include "Game/AuraGameStateBase.h"
 
 UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetContoller(const UObject* WorldContextObject)
 {
@@ -83,18 +84,19 @@ bool UAuraAbilitySystemLibrary::UpdateOverlay(const UObject* WorldContextObject)
 
 FGameplayTag UAuraAbilitySystemLibrary::FindInputTagFromAbilityInfo(const UObject* WorldContextObject, const FGameplayTag& AbilityTag)
 {
-	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if (AuraGameMode == nullptr) return FGameplayTag();
-	auto AbilityInfo = AuraGameMode->AbilityInfo;
+	const AAuraGameStateBase* AuraGameState = Cast<AAuraGameStateBase>(UGameplayStatics::GetGameState(WorldContextObject));
+	if (AuraGameState == nullptr) return FGameplayTag();
+	auto AbilityInfo = AuraGameState->AbilityInfo;
 	return AbilityInfo->GetAbilityInfo(AbilityTag).InputTag;
+	
 }
 
 FGameplayTag UAuraAbilitySystemLibrary::FindStatusTagFromAbilityInfo(const UObject* WorldContextObject,
 	const FGameplayTag& AbilityTag)
 {
-	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if (AuraGameMode == nullptr) return FGameplayTag();
-	auto AbilityInfo = AuraGameMode->AbilityInfo;
+	const AAuraGameStateBase* AuraGameState = Cast<AAuraGameStateBase>(UGameplayStatics::GetGameState(WorldContextObject));
+	if (AuraGameState == nullptr) return FGameplayTag();
+	auto AbilityInfo = AuraGameState->AbilityInfo;
 	
 	return AbilityInfo->GetAbilityInfo(AbilityTag).StatusTag;
 
@@ -174,9 +176,9 @@ UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObj
 
 UAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldContextObject)
 {
-	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if (AuraGameMode == nullptr) return nullptr;
-	auto AbilityInfo = AuraGameMode->AbilityInfo;
+	const AAuraGameStateBase* AuraGameState = Cast<AAuraGameStateBase>(UGameplayStatics::GetGameState(WorldContextObject));
+	if (AuraGameState == nullptr) return nullptr;
+	auto AbilityInfo = AuraGameState->AbilityInfo;
 	return AbilityInfo;
 }
 
@@ -267,6 +269,16 @@ FGameplayTag UAuraAbilitySystemLibrary::FindStatusTagFromSpec(const FGameplayAbi
 	{
 		if (StatusTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Status"))))
 			return StatusTag;
+	}
+	return FGameplayTag();
+}
+
+FGameplayTag UAuraAbilitySystemLibrary::FindAbilityTypeTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	for (auto TypeTag: AbilitySpec.GetDynamicSpecSourceTags())
+	{
+		if (TypeTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("AbilityType"))))
+			return TypeTag;
 	}
 	return FGameplayTag();
 }

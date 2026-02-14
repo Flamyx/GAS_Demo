@@ -46,7 +46,8 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 		}
 	);
 	
-	GetAuraASC()->OnSpellEquipped.AddDynamic(this, &USpellMenuWidgetController::BroadcastEquippedSpell);
+	GetAuraASC()->SpellEquippedDelegate.AddUObject(this, &USpellMenuWidgetController::SpellEquipped);
+	
 }
 
 void USpellMenuWidgetController::UpgradeSpell()
@@ -89,12 +90,47 @@ void USpellMenuWidgetController::OnSpellClicked(const FGameplayTag& AbilityTag)
 	
 	SelectedAbility.AbilityTag = AbilityTag;
 	SelectedAbility.StatusTag = StatusTag;
+	SelectedAbility.AbilityTypeTag = UAuraAbilitySystemLibrary::FindAbilityTypeTagFromSpec(*AbilitySpec);
 }
 
 void USpellMenuWidgetController::OnInputGlobeClicked(const FGameplayTag& InputTag)
 {
+	if (!bWaitingForSpellInput) return;
 	SelectedAbility.InputTag = InputTag;
-	GetAuraASC()->EquipSpell(SelectedAbility.InputTag, SelectedAbility.AbilityTag);
+	
+	GetAuraASC()->ServerEquipSpell(SelectedAbility.InputTag, SelectedAbility.AbilityTag);
+}
+
+void USpellMenuWidgetController::OnEquipButtonPressed()
+{
+	//Here should be broadcast of delegate to play animation on either offensive spell tree or passive
+	bWaitingForSpellInput = true;
+	
+	if (SelectedAbility.StatusTag.MatchesTagExact(FAuraGameplayTags::Get().Status_Equipped))
+	{
+		SelectedSlot = UAuraAbilitySystemLibrary::FindInputTagFromSpec(*GetAuraASC()->GetSpecFromAbilityTag(SelectedAbility.AbilityTag));
+	}
+}
+
+void USpellMenuWidgetController::SpellEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status,
+	const FGameplayTag& Slot, const FGameplayTag& PrevSlot)
+{
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
+	
+	FAuraAbilityInfo PrevSlotInfo;
+	PrevSlotInfo.AbilityTag = GameplayTags.Abilities_None;
+	PrevSlotInfo.InputTag = PrevSlot;
+	PrevSlotInfo.StatusTag = GameplayTags.Status_Unlocked;
+	AbilityCfgDelegate.Broadcast(PrevSlotInfo);
+	
+	FAuraAbilityInfo SlotInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAuraASC())->GetAbilityInfo(AbilityTag);
+	SlotInfo.InputTag = Slot;
+	SlotInfo.StatusTag = Status;
+	AbilityCfgDelegate.Broadcast(SlotInfo);
+	
+	bWaitingForSpellInput = false;
+	//Here should bne broadcaszt of delegate to stop animatrions
+	OnSpellDeselectedDelegate.Broadcast(AbilityTag);
 }
 
 void USpellMenuWidgetController::OnSpellPointsAdded(int32 IncomingSpellPoints)

@@ -10,8 +10,12 @@ FString UAuraGameplayAbility::GetDescription(int32 Level, float Damage, const FS
 	
 	float ManaCost = GetManaCost(Level);
 	float Cooldown = GetCooldown(Level);
+	if (Damage)
+	{
+		return FString::Printf(TEXT("<Title>%s</>\n<Default> Level </><Level> %d</> \n <Default>Damage: </><Damage>%.1f</> \n <Default>Cooldown:</><Cooldown>%.1f </>\n <Default>Mana Cost: </><ManaCost>%.1f</>"), *Title, Level, Damage, Cooldown, ManaCost); 
+	}
+	return FString::Printf(TEXT("<Title>%s</>\n<Default> Level </><Level> %d</> \n <Default>Cooldown:</><Cooldown>%.1f </>\n <Default>Mana Cost: </><ManaCost>%.1f</>"), *Title, Level, Cooldown, ManaCost); 
 
-	return FString::Printf(TEXT("<Title>%s</>\n<Default> Level </><Level> %d</> \n <Default>Damage: </><Damage>%.1f</> \n <Default>Cooldown:</><Cooldown>%.1f </>\n <Default>Mana Cost: </><ManaCost>%.1f</>"), *Title, Level, Damage, Cooldown, ManaCost); 
 }
 
 FString UAuraGameplayAbility::GetNextLevelDescription(int32 Level, float Damage)

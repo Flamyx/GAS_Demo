@@ -8,10 +8,10 @@
 #include "AuraAbilitySystemComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer& /* AssetTags */);
-DECLARE_MULTICAST_DELEGATE(FAbilitiesGivenDelegate);
+DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven);
 DECLARE_DELEGATE_OneParam(FForEachAbility, const FGameplayAbilitySpec&);
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FonStatusChangedDelegate, const FGameplayTag& /* AbilityTag */, const FGameplayTag& /* StatusTag */, int32 /* AbilityLevel */);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSpellEquippedDelegate);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FonStatusChanged, const FGameplayTag& /* AbilityTag */, const FGameplayTag& /* StatusTag */, int32 /* AbilityLevel */);
+DECLARE_MULTICAST_DELEGATE_FourParams(FOnSpellEquipped, const FGameplayTag& /* AbilityTag */, const FGameplayTag& /* StatusTag */, const FGameplayTag& /* PrevSlot */, const FGameplayTag& /* Slot */);
 
 /**
  * 
@@ -25,9 +25,9 @@ public:
 	void AbilityActorInfoSet();
 
 	FEffectAssetTags EffectAssetTags;
-	FAbilitiesGivenDelegate AbilitiesGiven;
-	FonStatusChangedDelegate StatusChangedDelegate;
-	FOnSpellEquippedDelegate OnSpellEquipped;
+	FAbilitiesGiven AbilitiesGiven;
+	FonStatusChanged StatusChangedDelegate;
+	FOnSpellEquipped SpellEquippedDelegate;
 	bool bStartupAbilitiesGiven = false;
 	
 	bool CheckIsAbilityAdded(const FGameplayTag& InputTag, bool bClearIfExists);
@@ -47,11 +47,15 @@ public:
 	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
 
 	void UpgradeSpell(const FGameplayTag& SpellTag);
+	
 	UFUNCTION(Server, Reliable)
 	void ServerUpgradeSpell(const FGameplayTag& SpellTag);
-	void EquipSpell(const FGameplayTag &InputTag, const FGameplayTag& SpellTag);
+	
 	UFUNCTION(Server, Reliable)
 	void ServerEquipSpell(const FGameplayTag &InputTag, const FGameplayTag &AbilityTag);
+	
+	UFUNCTION(Client, Reliable)
+	void ClientEquipSpell(const FGameplayTag &PrevSlot, const FGameplayTag &Slot, const FGameplayTag &AbilityTag, const FGameplayTag &Status);
 	
 	void UpdateAbilities(int32 Level);
 	
@@ -67,6 +71,8 @@ protected:
 
 	UFUNCTION(Client, Reliable)
 	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle);
-	
-	
+
+private:
+	void ClearAbilitiesOfSlot(const FGameplayTag& SlotTag);
+	void ClearSlot(FGameplayAbilitySpec* AbilitySpec);
 };

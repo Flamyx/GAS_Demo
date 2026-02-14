@@ -73,6 +73,8 @@ public:
 	
 	static FGameplayTag FindStatusTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 	
+	static FGameplayTag FindAbilityTypeTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+	
 	static FGameplayTag FindInputTagFromAbilityInfo(const UObject* WorldContextObject, const FGameplayTag& AbilityTag);
 	
 	static FGameplayTag FindStatusTagFromAbilityInfo(const UObject* WorldContextObject, const FGameplayTag& AbilityTag);

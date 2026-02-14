@@ -117,8 +117,8 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
 	{
 		float Damage = GetIncomingDamage();
-		/*FString Msg = FString(TEXT("Damage is %f"), Damage);
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%s"), *Msg));*/
+		FString Msg = FString::Printf(TEXT("Damage is %f"), Damage);
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%s"), *Msg));
 		SetIncomingDamage(0.f);
 		if (Damage > 0.f)
 		{

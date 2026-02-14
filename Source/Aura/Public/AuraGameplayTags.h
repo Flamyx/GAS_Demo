@@ -36,7 +36,10 @@ public:
 	FGameplayTag Attributes_Resistance_Lightning;
 	FGameplayTag Attributes_Resistance_Arcane;
 	FGameplayTag Attributes_Resistance_Physical;
-
+	
+	FGameplayTag Debuff_Burn;
+	FGameplayTag Debuff_Stun;
+	
 	FGameplayTag Attributes_Meta_IncomingXP;
 
 	FGameplayTag InputTag_RMB;
@@ -68,8 +71,6 @@ public:
 	FGameplayTag Cooldown_Fire_Meteorite;
 	FGameplayTag Cooldown_Lightning_Electrocute;
 
-	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
-
 	FGameplayTag HitReact;
 	FGameplayTag Cooldown;
 	
@@ -89,7 +90,11 @@ public:
 
 	FGameplayTag Enemy;
 	FGameplayTag Aura;
-
+	
+	FGameplayTag Effect_Status_Applied;
+	
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToDebuffs;
 
 private:
 	static FAuraGameplayTags GameplayTags;

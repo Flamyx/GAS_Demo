@@ -2,6 +2,8 @@
 
 
 #include "UI/WidgetController/OverlayWidgetController.h"
+
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
@@ -70,6 +72,23 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 				}
 			}
 		);
+		
+		AuraASC->SpellEquippedDelegate.AddUObject(this, &UOverlayWidgetController::SpellEquipped);
+		
+		GetAuraASC()->StatusChangedDelegate.AddLambda(
+		[this](const FGameplayTag& AbilityTag, const FGameplayTag& StatusTag, int32 Level)
+		{
+			auto AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAuraASC());
+			auto AbilityCfg = AbilityInfo->GetAbilityInfo(AbilityTag);
+			auto AbilitySpec = GetAuraASC()->GetSpecFromAbilityTag(AbilityTag);
+			if (AbilitySpec)
+			{
+				AbilityCfg.StatusTag = StatusTag;
+				AbilityCfg.InputTag = UAuraAbilitySystemLibrary::FindInputTagFromSpec(*AbilitySpec);
+			}
+			AbilityCfgDelegate.Broadcast(AbilityCfg);
+		}
+		);
 	}
 
 	GetAuraPS()->XPDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
@@ -80,8 +99,22 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		}
 	);
 	
-	GetAuraASC()->OnSpellEquipped.AddDynamic(this, &UOverlayWidgetController::BroadcastEquippedSpell);
-		
+}
+
+void UOverlayWidgetController::SpellEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status,
+	const FGameplayTag& Slot, const FGameplayTag& PrevSlot)
+{
+	FAuraAbilityInfo PrevSlotInfo;
+	PrevSlotInfo.AbilityTag = FAuraGameplayTags::Get().Abilities_None;
+	PrevSlotInfo.InputTag = PrevSlot;
+	PrevSlotInfo.StatusTag = FAuraGameplayTags::Get().Status_Unlocked;
+	
+	AbilityCfgDelegate.Broadcast(PrevSlotInfo);
+	
+	FAuraAbilityInfo SlotInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAuraASC())->GetAbilityInfo(AbilityTag);
+	SlotInfo.InputTag = Slot;
+	SlotInfo.StatusTag = Status;
+	AbilityCfgDelegate.Broadcast(SlotInfo);
 }
 
 void UOverlayWidgetController::MaxManaChanged(const FOnAttributeChangeData& Data) const

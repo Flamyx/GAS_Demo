@@ -24,8 +24,3 @@ void UAuraDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 	GetAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(*Spec,
 												UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor));
 }
-
-// FString UAuraDamageGameplayAbility::GetDescription(int32 Level, float Damage, const FString& Title)
-// {
-// 	return Super::GetDescription(Level, Damage, Title);
-// }
