@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
@@ -41,6 +40,7 @@ public:
 	void SetLevel(int32 IncomingLevel);
 	void AddToAttributePoints(int32 IncomingAttributePoints);
 	void AddToSpellPoints(int32 IncomingSpellPoints);
+	void LevelUP();
 
 	FLevelUpInfo FindLevelInfo();
 
@@ -48,7 +48,9 @@ public:
 	FOnPlayerStatChanged LevelDelegate;
 	FOnPlayerStatChanged SpellPointsDelegate;
 	FOnPlayerStatChanged AttributePointsDelegate;
-
+	
+	
+	
 protected:
 
 	UPROPERTY(VisibleAnywhere)

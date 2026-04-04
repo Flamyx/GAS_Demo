@@ -18,5 +18,4 @@ class AURA_API AAuraGameModeBase : public AGameModeBase
 public:
 	UPROPERTY(EditAnywhere, Category = "Character Class Defaults")
 	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;
-
 };

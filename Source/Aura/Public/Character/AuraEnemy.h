@@ -36,14 +36,16 @@ public:
 
 	/* Combat interface */
 	virtual int32 GetPlayerLevel_Implementation() override;
-	virtual void Die() override;
+	virtual void Die(const FVector& DeathImpulse) override;
 	virtual FTaggedMontage ChooseAttack_Implementation() override;
 	/* End combat interface */
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TArray<FTaggedMontage> TaggedMontages;
-
+	
+	virtual void OutsideWorldBounds() override;
+	virtual void Destroyed() override;
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
@@ -61,7 +63,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float BaseWalkSpeed = 250.f;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Combat")
-	float LifeSpan = 5.f;
+	float DissolveLifeSpan = 5.f;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 	TObjectPtr<AActor> CombatTarget;

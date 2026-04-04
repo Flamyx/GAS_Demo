@@ -36,7 +36,15 @@ public:
 	FGameplayTag Attributes_Resistance_Lightning;
 	FGameplayTag Attributes_Resistance_Arcane;
 	FGameplayTag Attributes_Resistance_Physical;
-
+	
+	FGameplayTag Debuff_Burn;
+	FGameplayTag Debuff_Stun;
+	
+	FGameplayTag Debuff_Chance;
+	FGameplayTag Debuff_Damage;
+	FGameplayTag Debuff_Duration;
+	FGameplayTag Debuff_Frequency;
+	
 	FGameplayTag Attributes_Meta_IncomingXP;
 
 	FGameplayTag InputTag_RMB;
@@ -57,14 +65,24 @@ public:
 	FGameplayTag Abilities_Summon;
 	FGameplayTag Abilities_Fire_FireBolt;
 	FGameplayTag Abilities_Fire_Meteorite;
+	FGameplayTag Abilities_Lightning_Electrocute;
+	FGameplayTag Abilities_Passive_AuraBuff;
+	FGameplayTag Abilities_None;
+	
+	FGameplayTag AbilityType_Passive;
+	FGameplayTag AbilityType_Offensive;
 
 	FGameplayTag Cooldown_Fire_FireBolt;
 	FGameplayTag Cooldown_Fire_Meteorite;
-
-	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
+	FGameplayTag Cooldown_Lightning_Electrocute;
 
 	FGameplayTag HitReact;
 	FGameplayTag Cooldown;
+	
+	FGameplayTag Status_Equipped;
+	FGameplayTag Status_Unlocked;
+	FGameplayTag Status_Eligible;
+	FGameplayTag Status_Locked;
 
 	FGameplayTag CombatSocket_Weapon;
 	FGameplayTag CombatSocket_RightHand;
@@ -77,7 +95,11 @@ public:
 
 	FGameplayTag Enemy;
 	FGameplayTag Aura;
-
+	
+	FGameplayTag Effect_Status_Applied;
+	
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToDebuffs;
 
 private:
 	static FAuraGameplayTags GameplayTags;

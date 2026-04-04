@@ -4,6 +4,9 @@
 #include "Character/AuraCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NiagaraComponent.h"
+#include "Player/AuraPlayerState.h"
+#include "Player/AuraPlayerController.h"
+#include "UI/Overlay/AuraHUD.h"
 
 AAuraCharacter::AAuraCharacter()
 {
@@ -11,7 +14,7 @@ AAuraCharacter::AAuraCharacter()
 	LevelUpComponent->SetupAttachment(GetRootComponent());
 	LevelUpComponent->bAutoActivate = false;
 
-	GetCharacterMovement()->RotationRate - FRotator(0.f, 400.f, 0.f);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
@@ -29,6 +32,10 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	// Init ability actor info for the server
 	InitAbilityActorInfo();
 	AddCharacterAbilities();
+	
+	AAuraPlayerState* PS = GetPlayerState<AAuraPlayerState>();
+	check(PS);
+	Cast<UAuraAbilitySystemComponent>(PS->GetAbilitySystemComponent())->UpdateAbilities(PS->GetPlayerLevel());
 }
 
 void AAuraCharacter::OnRep_PlayerState()
@@ -49,6 +56,7 @@ void AAuraCharacter::AddToLevel_Implementation(int32 NumLevelUps)
 	AAuraPlayerState* PS = GetPlayerState<AAuraPlayerState>();
 	check(PS);
 	PS->AddToLevel(NumLevelUps);
+	Cast<UAuraAbilitySystemComponent>(PS->GetAbilitySystemComponent())->UpdateAbilities(PS->GetPlayerLevel());
 }
 
 void AAuraCharacter::AddToSpellPoints_Implementation(int32 inSpellPoints)
@@ -70,6 +78,13 @@ int32 AAuraCharacter::GetXP_Implementation()
 	AAuraPlayerState* PS = GetPlayerState<AAuraPlayerState>();
 	check(PS);
 	return PS->GetXP();
+}
+
+int32 AAuraCharacter::GetLevel_Implementation()
+{
+	AAuraPlayerState* PS = GetPlayerState<AAuraPlayerState>();
+	check(PS);
+	return PS->GetPlayerLevel();
 }
 
 int32 AAuraCharacter::FindLevelForXP_Implementation(float inXP)
@@ -99,10 +114,8 @@ int32 AAuraCharacter::GetAttributePointsReward_Implementation(int32 inLevel)
 void AAuraCharacter::LevelUp_Implementation()
 {
 	MultiCastLevelUpParticles();
-	/*AAuraPlayerState* PS = GetPlayerState<AAuraPlayerState>();
-	check(PS);
-	PS->SetLevel(inLevel);*/
-	//TODO add niagara effect
+	
+	//AbilitySystemComponent
 }
 
 void AAuraCharacter::RecalculateSecondaryAttributes_Implementation()
@@ -148,6 +161,7 @@ void AAuraCharacter::InitAbilityActorInfo()
 	Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
 
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
+	OnASCRegisteredDelegate.Broadcast(AbilitySystemComponent);
 	AttributeSet = AuraPlayerState->GetAttributeSet();
 
 	AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController());
@@ -159,11 +173,5 @@ void AAuraCharacter::InitAbilityActorInfo()
 			AuraHUD->InitOverlay(AuraPlayerController, AuraPlayerState, AbilitySystemComponent, AttributeSet);
 		}
 	}
-
 	InitializeDefaultAttributes();
-}
-
-void AAuraCharacter::BindToLevelUp()
-{
-	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 }

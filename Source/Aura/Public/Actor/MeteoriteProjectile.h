@@ -3,10 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AuraProjectile.h"
 #include "GameFramework/Actor.h"
-#include "GameFramework/ProjectileMovementComponent.h"
-#include "Components/AudioComponent.h"
-#include "GameplayEffectTypes.h"
 #include "Components/SphereComponent.h"
 #include "MeteoriteProjectile.generated.h"
 
@@ -16,20 +14,12 @@ class UNiagaraSystem;
  * 
  */
 UCLASS()
-class AURA_API AMeteoriteProjectile : public AActor
+class AURA_API AMeteoriteProjectile : public AAuraProjectile
 {
 	GENERATED_BODY()
 
 public:
 	AMeteoriteProjectile();
-
-	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
-
-	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"));
-	FGameplayEffectSpecHandle DamageEffectSpecHandle;
-
-	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"));
-	FGameplayEffectSpecHandle PeriodicDamageEffectSpecHandle;
 
 	void SetSphereRadius(float ChargeRatio);
 
@@ -38,40 +28,16 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 
-	UFUNCTION()
-	void OnSphereOverlap(
+	virtual void OnOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex,
 		bool bFromSweep,
-		const FHitResult& SweepResult);
+		const FHitResult& SweepResult) override;
 
 	UPROPERTY(EditAnywhere)
 	float BlastRadius;
 	UPROPERTY(EditAnywhere)
 	float MaxBlastRadius;
-
-	TArray<AActor*> AffectedActors;
-
-private:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USphereComponent> Sphere;
-
-	float LifeSpan = 15.f;
-	
-	bool bHit = false;
-
-	UPROPERTY(EditAnywhere)
-		TObjectPtr<UNiagaraSystem> ImpactEffect;
-
-	UPROPERTY(EditAnywhere)
-		TObjectPtr<USoundBase> ImpactSound;
-
-	UPROPERTY(EditAnywhere)
-		TObjectPtr<USoundBase> LoopingSound;
-	UPROPERTY()
-		TObjectPtr<UAudioComponent> LoopingSoundComponent;
-
-	void PlayImpact();
 };

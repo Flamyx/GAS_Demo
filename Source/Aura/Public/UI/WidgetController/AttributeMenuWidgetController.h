@@ -43,6 +43,6 @@ protected:
 private:
 	void BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute) const;
 
-	UFUNCTION(BlueprintCallable)
-	void AddPointToAttribute(const FString& AttributeName) const;
+	// UFUNCTION(BlueprintCallable)
+	// void AddPointToAttribute(const FString& AttributeName) const;
 };

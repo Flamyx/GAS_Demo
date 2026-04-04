@@ -2,6 +2,8 @@
 
 
 #include "UI/WidgetController/OverlayWidgetController.h"
+
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
@@ -9,54 +11,50 @@
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
-	UAuraAttributeSet* AuraAttributeSet = CastChecked<UAuraAttributeSet>(AttributeSet);
-
-	OnHealthChanged.Broadcast(AuraAttributeSet->GetHealth());
-	OnMaxHealthChanged.Broadcast(AuraAttributeSet->GetMaxHealth());
-	OnManaChanged.Broadcast(AuraAttributeSet->GetMana());
-	OnMaxManaChanged.Broadcast(AuraAttributeSet->GetMaxMana());
+	OnHealthChanged.Broadcast(GetAuraAS()->GetHealth());
+	OnMaxHealthChanged.Broadcast(GetAuraAS()->GetMaxHealth());
+	OnManaChanged.Broadcast(GetAuraAS()->GetMana());
+	OnMaxManaChanged.Broadcast(GetAuraAS()->GetMaxMana());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
-	UAuraAttributeSet* AuraAttributeSet = CastChecked<UAuraAttributeSet>(AttributeSet);
-	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		AuraAttributeSet->GetHealthAttribute()).AddLambda(
+		GetAuraAS()->GetHealthAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data) {
 				OnHealthChanged.Broadcast(Data.NewValue);}
 		);
 	
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		AuraAttributeSet->GetMaxHealthAttribute()).AddLambda(
+		GetAuraAS()->GetMaxHealthAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data) {
 				OnMaxHealthChanged.Broadcast(Data.NewValue);}
 		);
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		AuraAttributeSet->GetManaAttribute()).AddLambda(
+		GetAuraAS()->GetManaAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data) {
 				OnManaChanged.Broadcast(Data.NewValue);}
 		);
 	
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		AuraAttributeSet->GetMaxManaAttribute()).AddLambda(
+		GetAuraAS()->GetMaxManaAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data) {
 				OnMaxManaChanged.Broadcast(Data.NewValue);}
 		);
 
 	/* Example of a Callback way instead of Lambda
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		AuraAttributeSet->GetMaxManaAttribute()).AddUObject(this, &UOverlayWidgetController::MaxManaChanged);*/
+		GetAuraAS()->GetMaxManaAttribute()).AddUObject(this, &UOverlayWidgetController::MaxManaChanged);*/
 
-	if (auto AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
+	if (GetAuraASC())
 	{
 		if (!AuraASC->bStartupAbilitiesGiven)
-			AuraASC->AbilitiesGiven.AddUObject(this, &UOverlayWidgetController::OnInitializeStartupAbilities);
+			AuraASC->AbilitiesGiven.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
 		else
-			OnInitializeStartupAbilities(AuraASC);
+			BroadcastAbilityInfo();
 
 		AuraASC->EffectAssetTags.AddLambda(
 			[this](const FGameplayTagContainer& AssetTags)
@@ -74,15 +72,49 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 				}
 			}
 		);
+		
+		AuraASC->SpellEquippedDelegate.AddUObject(this, &UOverlayWidgetController::SpellEquipped);
+		
+		GetAuraASC()->StatusChangedDelegate.AddLambda(
+		[this](const FGameplayTag& AbilityTag, const FGameplayTag& StatusTag, int32 Level)
+		{
+			auto AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAuraASC());
+			auto AbilityCfg = AbilityInfo->GetAbilityInfo(AbilityTag);
+			auto AbilitySpec = GetAuraASC()->GetSpecFromAbilityTag(AbilityTag);
+			if (AbilitySpec)
+			{
+				AbilityCfg.StatusTag = StatusTag;
+				AbilityCfg.InputTag = UAuraAbilitySystemLibrary::FindInputTagFromSpec(*AbilitySpec);
+			}
+			AbilityCfgDelegate.Broadcast(AbilityCfg);
+		}
+		);
 	}
 
-	AuraPlayerState->XPDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
-	AuraPlayerState->LevelDelegate.AddLambda(
+	GetAuraPS()->XPDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
+	GetAuraPS()->LevelDelegate.AddLambda(
 		[this](int32 NewLevel)
 		{
 			OnPlayerLevelChangedDelegate.Broadcast(NewLevel);
 		}
 	);
+	
+}
+
+void UOverlayWidgetController::SpellEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status,
+	const FGameplayTag& Slot, const FGameplayTag& PrevSlot)
+{
+	FAuraAbilityInfo PrevSlotInfo;
+	PrevSlotInfo.AbilityTag = FAuraGameplayTags::Get().Abilities_None;
+	PrevSlotInfo.InputTag = PrevSlot;
+	PrevSlotInfo.StatusTag = FAuraGameplayTags::Get().Status_Unlocked;
+	
+	AbilityCfgDelegate.Broadcast(PrevSlotInfo);
+	
+	FAuraAbilityInfo SlotInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAuraASC())->GetAbilityInfo(AbilityTag);
+	SlotInfo.InputTag = Slot;
+	SlotInfo.StatusTag = Status;
+	AbilityCfgDelegate.Broadcast(SlotInfo);
 }
 
 void UOverlayWidgetController::MaxManaChanged(const FOnAttributeChangeData& Data) const
@@ -90,30 +122,12 @@ void UOverlayWidgetController::MaxManaChanged(const FOnAttributeChangeData& Data
 	OnMaxManaChanged.Broadcast(Data.NewValue);
 }
 
-void UOverlayWidgetController::OnInitializeStartupAbilities(UAuraAbilitySystemComponent* Aura_ASC)
-{
-	if (!Aura_ASC->bStartupAbilitiesGiven)
-		return;
-	
-	FForEachAbility BroadcastDelegate;
-	BroadcastDelegate.BindLambda([this](const FGameplayAbilitySpec& AbilitySpec)
-	{ 
-		FGameplayTag AbilityTag = UAuraAbilitySystemLibrary::FindAbilityTagFromSpec(AbilitySpec);
-		FAuraAbilityInfo AbilityCfg = AbilityInfo->GetAbilityInfo(AbilityTag);
-		AbilityCfg.InputTag = UAuraAbilitySystemLibrary::FindInputTagFromSpec(AbilitySpec);
-		AbilityCfgDelegate.Broadcast(AbilityCfg);
-	});
-
-	Aura_ASC->ForEachAbility(BroadcastDelegate);
-}
-
 void UOverlayWidgetController::OnXPChanged(int32 newXP)
 {
-	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
-	int32 PlayerLevel = AuraPlayerState->FindLevelForXP(newXP);
+	int32 PlayerLevel = GetAuraPS()->FindLevelForXP(newXP);
 
-	auto CurrentLevelInfo = AuraPlayerState->GetLevelUpInfo(PlayerLevel);
-	auto NextLevelInfo = AuraPlayerState->GetLevelUpInfo(PlayerLevel + 1);
+	auto CurrentLevelInfo = GetAuraPS()->GetLevelUpInfo(PlayerLevel);
+	auto NextLevelInfo = GetAuraPS()->GetLevelUpInfo(PlayerLevel + 1);
 	if (!CurrentLevelInfo.LevelUpRequirement || !NextLevelInfo.LevelUpRequirement)
 		return;
 
@@ -124,6 +138,4 @@ void UOverlayWidgetController::OnXPChanged(int32 newXP)
 
 void UOverlayWidgetController::OnLvlUp(const FLevelUpInfo& LvlUpInfo)
 {
-	OnSpellPointsAddedDelegate.Broadcast(LvlUpInfo.SpellPointReward);
-	OnAttributePointsAddedDelegate.Broadcast(LvlUpInfo.AttributePointReward);
 }

@@ -4,10 +4,10 @@
 
 #include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
+#include "AuraAbilityTypes.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/AudioComponent.h"
-#include "GameplayEffectTypes.h"
 #include "AuraProjectile.generated.h"
 
 class UNiagaraSystem;
@@ -23,15 +23,16 @@ public:
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"));
-	FGameplayEffectSpecHandle DamageEffectSpecHandle;
+	FAuraDamageEffectParams DamageEffectParams;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void OnHit();
 	virtual void Destroyed() override;
 
-	UFUNCTION()
-	void OnSphereOverlap(
+	UFUNCTION(BlueprintCallable)
+	virtual void OnOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
@@ -40,22 +41,23 @@ protected:
 		const FHitResult& SweepResult);
 
 	UPROPERTY(EditDefaultsOnly)
-	float LifeSpan = 15.f;
-
-private:
+	float MaxLifeSpan = 15.f;
+	
 	bool bHit = false;
-
+	
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> LoopingSoundComponent;
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> LoopingSound;
+
+private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraSystem> ImpactEffect;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundBase> ImpactSound;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<USoundBase> LoopingSound;
-	UPROPERTY()
-	TObjectPtr<UAudioComponent> LoopingSoundComponent;
 };

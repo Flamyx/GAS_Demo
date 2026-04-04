@@ -5,6 +5,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Aura/Aura.h"
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -23,6 +25,10 @@ AAuraCharacterBase::AAuraCharacterBase()
 	Weapon = CreateDefaultSubobject <USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+	
+	// BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComponent");
+	// BurnDebuffComponent->SetupAttachment(GetRootComponent());
+	// BurnDebuffComponent->DebuffTag = FAuraGameplayTags::Get().Debuff_Burn;
 }
 
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const 
@@ -35,24 +41,31 @@ UAnimMontage* AAuraCharacterBase::GetHitReactMontage_Implementation()
 	return HitReactMontage;
 }
 
-void AAuraCharacterBase::Die()
+void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 {
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
-
-	MulticastHandleDeath();
+	MulticastHandleDeath(DeathImpulse);
 }
 
-void AAuraCharacterBase::MulticastHandleDeath_Implementation()
+void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& DeathImpulse)
 {
-	Weapon->SetSimulatePhysics(true);
-	Weapon->SetEnableGravity(true);
-	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
+	if (bDead) return;
+	bDead = true;
+	
+	if (Weapon)
+	{
+		Weapon->SetSimulatePhysics(true);
+		Weapon->SetEnableGravity(true);
+		Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		Weapon->AddImpulse(DeathImpulse);
+	}
+	
 	GetMesh()->SetEnableGravity(true);
-	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-
+	
+	//GetMesh()->SetSimulatePhysics(true);
+	
 	UGameplayStatics::PlaySoundAtLocation(this,
 		DeathSound,
 		GetActorLocation(),
@@ -60,15 +73,14 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
-
-	bDead = true;
+	OnDeathDelegate.Broadcast(this);
+	
 }
 
 // Called when the game starts or when spawned
 void AAuraCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& SocketTag)
@@ -101,6 +113,16 @@ UNiagaraSystem* AAuraCharacterBase::GetBloodEffect_Implementation()
 ECharacterClass AAuraCharacterBase::GetCharacterClass_Implementation()
 {
 	return CharacterClass;
+}
+
+FOnASCRegistered AAuraCharacterBase::GetOnASCRegisteredDelegate()
+{
+	return OnASCRegisteredDelegate;
+}
+
+FOnDeath AAuraCharacterBase::GetOnDeathDelegate()
+{
+	return OnDeathDelegate;
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()

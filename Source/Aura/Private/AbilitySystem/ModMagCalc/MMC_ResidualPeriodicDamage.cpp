@@ -33,24 +33,24 @@ float UMMC_ResidualPeriodicDamage::CalculateBaseMagnitude_Implementation(const F
 
 	float FireResistance = 0;
 	GetCapturedAttributeMagnitude(FireResistanceDef, Spec, EvaluationParameters, FireResistance);
-	float LightningResistance = 0;
-	GetCapturedAttributeMagnitude(LightningResistanceDef, Spec, EvaluationParameters, LightningResistance);
+	// float LightningResistance = 0;
+	// GetCapturedAttributeMagnitude(LightningResistanceDef, Spec, EvaluationParameters, LightningResistance);
 
 	const auto Avatar = Spec.GetEffectContext().GetEffectCauser();
 	UAbilitySystemComponent* InstigatorASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Avatar);
 	float InstigatorIntelligence = InstigatorASC->GetNumericAttribute(UAuraAttributeSet::GetIntelligenceAttribute());
 
 	float FireDamageMagnitude = Spec.GetSetByCallerMagnitude(FAuraGameplayTags::Get().Damage_Residual_Fire);
-	float LightningDamageMagnitude = Spec.GetSetByCallerMagnitude(FAuraGameplayTags::Get().Damage_Lightning);
+	//float LightningDamageMagnitude = Spec.GetSetByCallerMagnitude(FAuraGameplayTags::Get().Damage_Lightning);
 
 	float FireDamage = FireDamageMagnitude * FMath::LogX(10.f, InstigatorIntelligence) * (1 - FireResistance / 100.f);
-	float LightningDamage = LightningDamageMagnitude * FMath::LogX(10.f, InstigatorIntelligence) * (1 - LightningResistance / 100.f);
-
-	/*FString DebugMessage = FString::Printf(
-		TEXT("Fire damage %.2f Lightning damage %.2f"),
-		FireDamage, LightningDamage
-	);
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, DebugMessage);
-	*/
-	return FireDamage + LightningDamage;
+	// float LightningDamage = LightningDamageMagnitude * FMath::LogX(10.f, InstigatorIntelligence) * (1 - LightningResistance / 100.f);
+	//
+	// FString DebugMessage = FString::Printf(
+	// 	TEXT("Fire damage %.2f Lightning damage %.2f"),
+	// 	FireDamage, LightningDamage
+	// );
+	// GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, DebugMessage);
+	
+	return FireDamage; // + LightningDamage;
 }

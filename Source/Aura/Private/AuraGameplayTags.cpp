@@ -158,7 +158,48 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Lightning, GameplayTags.Attributes_Resistance_Lightning);
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Arcane, GameplayTags.Attributes_Resistance_Arcane);
 	GameplayTags.DamageTypesToResistances.Add(GameplayTags.Damage_Physical, GameplayTags.Attributes_Resistance_Physical);
+	
+	/*
+	Resistances
+	*/
 
+	GameplayTags.Debuff_Burn = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Burn"),
+		FString("Fire damage resistance")
+	);
+
+	GameplayTags.Debuff_Stun = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Stun"),
+		FString("Lightning damage resistance")
+	);
+	
+	GameplayTags.Debuff_Chance = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Chance"),
+		FString("Debuff Chance")
+	);
+
+	GameplayTags.Debuff_Duration = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Duration"),
+		FString("Debuff Duration")
+	);
+	
+	GameplayTags.Debuff_Frequency = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Frequency"),
+		FString("Debuff Frequency")
+	);
+
+	GameplayTags.Debuff_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Debuff.Damage"),
+		FString("Debuff Damage")
+	);
+	
+
+	/*
+	Map of Damage types to Resistances
+	*/
+	GameplayTags.DamageTypesToDebuffs.Add(GameplayTags.Damage_Fire, GameplayTags.Debuff_Burn);
+	GameplayTags.DamageTypesToDebuffs.Add(GameplayTags.Damage_Lightning, GameplayTags.Debuff_Stun);
+	
 	/*
 	Effects
 	*/
@@ -172,10 +213,17 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Cooldown"),
 		FString("Tag granted when ability is used")
 	);
+	
+	
 
 	/*
 	Abilities
 	*/
+	
+	GameplayTags.Abilities_None= UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.None"),
+		FString("Empty Ability Tag")
+	);
 
 	GameplayTags.Abilities_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Abilities.Attack"),
@@ -197,6 +245,48 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Meteorite Ability Tag")
 	);
 
+	GameplayTags.Abilities_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Lightning.Electrocute"),
+		FString("Electrocute Ability Tag")
+	);
+	
+	GameplayTags.Abilities_Passive_AuraBuff = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Passive.AuraBuff"),
+		FString("AuraBuff Ability Tag")
+	);
+	
+	GameplayTags.AbilityType_Passive = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("AbilityType.Passive"),
+		FString("Passive Ability Tag")
+	);
+	
+	GameplayTags.AbilityType_Offensive = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("AbilityType.Offensive"),
+		FString("Offensive Ability Tag")
+	);
+	
+	
+	GameplayTags.Status_Eligible = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Eligible"),
+		FString("Eligible Ability Tag")
+	);
+	
+	GameplayTags.Status_Equipped = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Equipped"),
+		FString("Equipped Ability Tag")
+	);
+	
+	GameplayTags.Status_Unlocked = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Unlocked"),
+		FString("Unlocked Ability Tag")
+	);
+	
+	GameplayTags.Status_Locked = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Locked"),
+		FString("Locked Ability Tag")
+	);
+
+
 	/*
 	Cooldown Tags
 	*/
@@ -208,6 +298,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Cooldown_Fire_Meteorite = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Cooldown.Fire.Meteorite"),
 		FString("Meteorite Ability Cooldown Tag")
+	);
+
+	GameplayTags.Cooldown_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Cooldown.Lightning.Electrocute "),
+		FString("Electrocute  Ability Cooldown Tag")
 	);
 
 	/*
@@ -262,5 +357,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Aura = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Aura"),
 		FString("Aura Tag")
+	);
+	
+	GameplayTags.Effect_Status_Applied = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Effect.Status.Applied"),
+		FString("Effect Status Applied")
 	);
 }

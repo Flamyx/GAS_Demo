@@ -35,27 +35,28 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	AAuraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectile>(ProjectileClass, SpawnTransform,
 		GetOwningActorFromActorInfo(), Cast<APawn>(GetOwningActorFromActorInfo()),
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
-	const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo());
-
-	FGameplayEffectContextHandle EffectContextHandle = SourceASC->MakeEffectContext();
-	EffectContextHandle.SetAbility(this);
-	EffectContextHandle.AddSourceObject(Projectile);
-	//WeakObjectPtr because Handle references are not always accounted in Garbage Collection
-	TArray<TWeakObjectPtr<AActor>> Actors; 
-	Actors.Add(Projectile);
-	EffectContextHandle.AddActors(Actors);
-	FHitResult HitResult;
-	HitResult.Location = ProjectileTargetLocation;
-	EffectContextHandle.AddHitResult(HitResult);
-
-	const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), EffectContextHandle);
-	for (TTuple<FGameplayTag, FScalableFloat>& Pair : DamageTypes)
-	{
-		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, Pair.Key, Pair.Value.GetValueAtLevel(GetAbilityLevel()));
-	}
-
-	Projectile->DamageEffectSpecHandle = SpecHandle;
-
+	
+	Projectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
 	Projectile->FinishSpawning(SpawnTransform);
+	
+	// const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo());
+	//
+	// FGameplayEffectContextHandle EffectContextHandle = SourceASC->MakeEffectContext();
+	// EffectContextHandle.SetAbility(this);
+	// EffectContextHandle.AddSourceObject(Projectile);
+	// //WeakObjectPtr because Handle references are not always accounted in Garbage Collection
+	// TArray<TWeakObjectPtr<AActor>> Actors; 
+	// Actors.Add(Projectile);
+	// EffectContextHandle.AddActors(Actors);
+	// FHitResult HitResult;
+	// HitResult.Location = ProjectileTargetLocation;
+	// EffectContextHandle.AddHitResult(HitResult);
+	//
+	// const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), EffectContextHandle);
+	//
+	// UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, DamageType, Damage.GetValueAtLevel(GetAbilityLevel()));
+	//
+	// if (Projectile == nullptr)
+	// 	return;
+	// Projectile->DamageEffectSpecHandle = SpecHandle;
 }
