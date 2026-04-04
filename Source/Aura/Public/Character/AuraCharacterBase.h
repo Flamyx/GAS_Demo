@@ -4,13 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-
-#include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystemInterface.h"
-
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Interaction/CombatInterface.h"
-#include "NiagaraSystem.h"
 #include "AuraCharacterBase.generated.h"
 
 UCLASS()
@@ -25,7 +22,7 @@ public:
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; } 
 
 	/* Combat Interface */
-	virtual void Die() override;
+	virtual void Die(const FVector& DeathImpulse) override;
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& SocketTag) override;
 	virtual bool IsDead_Implementation() const override;
@@ -35,12 +32,17 @@ public:
 	virtual int32 GetMinionLimit_Implementation() override { return MinionLimit; };
 	virtual void UpdateMinionCount_Implementation(int32 AddVal) override { MinionCount += AddVal; };
 	virtual ECharacterClass GetCharacterClass_Implementation() override;
+	virtual FOnASCRegistered GetOnASCRegisteredDelegate() override;
+	virtual FOnDeath GetOnDeathDelegate() override;
 	/* End Combat Interface */
 
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void MulticastHandleDeath();
+	virtual void MulticastHandleDeath(const FVector& DeathImpulse);
  
 	bool isNPC = false;
+	
+	FOnASCRegistered OnASCRegisteredDelegate;
+	FOnDeath OnDeathDelegate;
 
 protected:
 	// Called when the game starts or when spawned
@@ -111,7 +113,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MinionLimit = 0;
-
+	
+	// UPROPERTY(EditAnywhere)
+	// TObjectPtr<UDebuffNiagaraComponent> BurnDebuffComponent;
+	
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;

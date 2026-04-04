@@ -45,47 +45,49 @@ void UMeteoriteProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetL
 		OwningActor, Cast<APawn>(OwningActor),
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	Projectile->SetSphereRadius(ChargeTime);
-
-	const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OwningActor);
-	FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
-
-	ContextHandle.SetAbility(this);
-	ContextHandle.AddSourceObject(Projectile);
-
-	//Owning Actor is AuraPlayerState, so IsNotFriend will not work properly
-	//ContextHandle.AddInstigator(OwningActor, OwningActor);
-
-	TArray<TWeakObjectPtr<AActor>> Actors = { Projectile };
-	ContextHandle.AddActors(Actors);
-
-	FHitResult HitResult;
-	HitResult.Location = ProjectileTargetLocation;
-	ContextHandle.AddHitResult(HitResult);
-
-	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), ContextHandle);
-	FGameplayEffectSpecHandle ResidualSpecHandle = SourceASC->MakeOutgoingSpec(ResidualDamageEffectClass, GetAbilityLevel(), ContextHandle.Duplicate());
-	
-	//FString ChargeString = FString::Printf(TEXT("Charge time %.2f"), ChargeTime);
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, ChargeString);
-	for (auto Pair : DamageTypes)
-	{
-		if (Pair.Key.MatchesTagExact(FAuraGameplayTags::Get().Damage_Residual_Fire))
-		{
-			UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(ResidualSpecHandle, Pair.Key, 
-				Pair.Value.GetValueAtLevel(GetAbilityLevel()) * ChargedMultiplier.GetValueAtLevel(ChargeTime));
-		}
-		else
-		{
-			UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, Pair.Key, 
-				Pair.Value.GetValueAtLevel(GetAbilityLevel()) * ChargedMultiplier.GetValueAtLevel(ChargeTime));
-		}
-	}
-
-	Projectile->DamageEffectSpecHandle = SpecHandle;
-	Projectile->PeriodicDamageEffectSpecHandle = ResidualSpecHandle;
+	Projectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
+	Projectile->DamageEffectParams.Damage *= ChargedMultiplier.GetValueAtLevel(ChargeTime);
 	Projectile->SetSphereRadius(ChargeTime / MaxChargeTime);
 
 	Projectile->FinishSpawning(SpawnTransform);
+	
+	// const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OwningActor);
+	// FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
+	//
+	// ContextHandle.SetAbility(this);
+	// ContextHandle.AddSourceObject(Projectile);
+	//
+	// //Owning Actor is AuraPlayerState, so IsNotFriend will not work properly
+	// //ContextHandle.AddInstigator(OwningActor, OwningActor);
+	//
+	// TArray<TWeakObjectPtr<AActor>> Actors = { Projectile };
+	// ContextHandle.AddActors(Actors);
+	//
+	// FHitResult HitResult;
+	// HitResult.Location = ProjectileTargetLocation;
+	// ContextHandle.AddHitResult(HitResult);
+	//
+	// FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), ContextHandle);
+	// FGameplayEffectSpecHandle ResidualSpecHandle = SourceASC->MakeOutgoingSpec(ResidualDamageEffectClass, GetAbilityLevel(), ContextHandle.Duplicate());
+	
+	//TODO: handle debuff
+	// for (auto Pair : DamageTypes)
+	// {
+	// 	if (Pair.Key.MatchesTagExact(FAuraGameplayTags::Get().Damage_Residual_Fire))
+	// 	{
+	// 		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(ResidualSpecHandle, Pair.Key, 
+	// 			Pair.Value.GetValueAtLevel(GetAbilityLevel()) * ChargedMultiplier.GetValueAtLevel(ChargeTime));
+	// 	}
+	// 	else
+	// 	{
+	// 		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, Pair.Key, 
+	// 			Pair.Value.GetValueAtLevel(GetAbilityLevel()) * ChargedMultiplier.GetValueAtLevel(ChargeTime));
+	// 	}
+	// }
+	
+	// Projectile->DamageEffectSpecHandle = SpecHandle;
+	// Projectile->PeriodicDamageEffectSpecHandle = ResidualSpecHandle;
+	
 }
 
 void UMeteoriteProjectileSpell::StartChargeTimeline()

@@ -267,11 +267,8 @@ bool UAuraAbilitySystemComponent::GetDescriptions(const FGameplayTag& AbilityTag
 		int32 NextLevelDamage = 0;
 		if (auto AuraDagameGA = Cast<UAuraDamageGameplayAbility>(AbilitySpec->Ability))
 		{
-			for (auto Pair : AuraDagameGA->DamageTypes)
-			{
-				Damage += Pair.Value.GetValueAtLevel(AbilityLevel);
-				NextLevelDamage += Pair.Value.GetValueAtLevel(AbilityLevel + 1);
-			}
+			Damage += AuraDagameGA->Damage.GetValueAtLevel(AbilityLevel);
+			NextLevelDamage += AuraDagameGA->Damage.GetValueAtLevel(AbilityLevel + 1);
 		}
 		
 		if (auto AuraGA = Cast<UAuraGameplayAbility>(AbilitySpec->Ability))

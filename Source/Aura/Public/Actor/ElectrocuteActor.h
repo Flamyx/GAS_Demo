@@ -39,14 +39,9 @@ protected:
 		AActor* OtherActor, 
 		UPrimitiveComponent* OtherComp, 
 		int32 OtherBodyIndex);
-	
-	// UPROPERTY(EditAnywhere)
-	// UCapsuleComponent* CapsuleComponent;
-	
 private:
 	TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
 	
 	UAbilitySystemComponent* GetTargetASCFromActiveEffect(FActiveGameplayEffectHandle EffectHandle);
 	AActor* GetInstigatorActorFromActiveEffect(FActiveGameplayEffectHandle EffectHandle);
-	
 };

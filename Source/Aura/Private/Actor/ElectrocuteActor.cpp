@@ -13,29 +13,12 @@ AElectrocuteActor::AElectrocuteActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	
-	// CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
-	// SetRootComponent(CapsuleComponent);
-	//
-	// CapsuleComponent->SetCapsuleSize(25.f, 75.f); 
-	// CapsuleComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	// FRotator Rotation = FRotator(90.f, 0.f, 0.f);
-	// CapsuleComponent->SetRelativeRotation(Rotation);
-	//
-	// CapsuleComponent->SetGenerateOverlapEvents(true);
-	// CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	// CapsuleComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	// CapsuleComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	// CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &AElectrocuteActor::OnCapsuleOverlap);
-	// CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &AElectrocuteActor::OnCapsuleEndOverlap);
-	
 }
 
 // Called when the game starts or when spawned
 void AElectrocuteActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AElectrocuteActor::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

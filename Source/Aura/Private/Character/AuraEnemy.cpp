@@ -104,16 +104,16 @@ void AAuraEnemy::BeginPlay()
 
 }
 
-void AAuraEnemy::Die()
+void AAuraEnemy::Die(const FVector& DeathImpulse)
 {
-	SetLifeSpan(LifeSpan);
-	Super::Die();
+	
+	SetLifeSpan(DissolveLifeSpan);
+	Super::Die(DeathImpulse);
 	if (AuraAIController)
 	{
 		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsDead"), true);
 	}
 }
-
 
 FTaggedMontage AAuraEnemy::ChooseAttack_Implementation()
 {
@@ -130,6 +130,18 @@ FTaggedMontage AAuraEnemy::ChooseAttack_Implementation()
 	}
 
 	return FTaggedMontage();
+}
+
+void AAuraEnemy::OutsideWorldBounds()
+{
+	GEngine->AddOnScreenDebugMessage(0, 2.f, FColor::Green, FString("Out of bounds"));
+	Super::OutsideWorldBounds();
+}
+
+void AAuraEnemy::Destroyed()
+{
+	GEngine->AddOnScreenDebugMessage(0, 2.f, FColor::Green, FString("Destroyed"));
+	Super::Destroyed();
 }
 
 void AAuraEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget)
@@ -163,6 +175,7 @@ void AAuraEnemy::InitAbilityActorInfo()
 	{
 		InitializeDefaultAttributes();
 	}
+	OnASCRegisteredDelegate.Broadcast(AbilitySystemComponent);
 }
 
 void AAuraEnemy::InitializeDefaultAttributes() const

@@ -56,10 +56,7 @@ void UElectrocute::SpawnProjectile(const FVector& ProjectileTargetLocation)
 	
 	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), EffectContextHandle);
 	
-	for (TTuple<FGameplayTag, FScalableFloat>& Pair : DamageTypes)
-	{
-		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, Pair.Key, Pair.Value.GetValueAtLevel(GetAbilityLevel()));
-	}
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, DamageType, Damage.GetValueAtLevel(GetAbilityLevel()));
 	
 	if (ElectricBeam == nullptr)
 	{
