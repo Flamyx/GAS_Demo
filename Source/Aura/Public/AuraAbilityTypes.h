@@ -11,28 +11,43 @@ struct FAuraDamageEffectParams
 	GENERATED_BODY()
 	
 	FAuraDamageEffectParams(){};
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<class UObject> WorldContextObject = nullptr;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	TSubclassOf<UGameplayEffect> DamageEffectClass = nullptr;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	TSubclassOf<UGameplayEffect> ResidualDamageEffectClass = nullptr;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UAbilitySystemComponent> SourceASC = nullptr;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UAbilitySystemComponent> TargetASC = nullptr;
 	
+	UPROPERTY(BlueprintReadWrite)
 	FGameplayTag DamageType = FGameplayTag();
 	
+	UPROPERTY(BlueprintReadWrite)
 	float Damage = 0.f;
+	UPROPERTY(BlueprintReadWrite)
 	float AbilityLevel = 0.f;
+	UPROPERTY(BlueprintReadWrite)
 	float DebuffChance = 0.f;
+	UPROPERTY(BlueprintReadWrite)
 	float DebuffFrequency = 0.f;
+	UPROPERTY(BlueprintReadWrite)
 	float DebuffDamage = 0.f;
+	UPROPERTY(BlueprintReadWrite)
 	float DebuffDuration = 0.f;
 	
+	
+	UPROPERTY(BlueprintReadWrite)
 	float DeathImpulseMagnitude = 0.f;
+	UPROPERTY(BlueprintReadWrite)
 	FVector DeathImpulse = FVector::ZeroVector;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float KnockbackImpulseMagnitude = 0.f;
+	UPROPERTY(BlueprintReadWrite)
+	FVector KnockbackImpulse = FVector::ZeroVector;
 };
 
 USTRUCT(BlueprintType)
@@ -44,21 +59,25 @@ public:
 
 	bool IsCriticalHit() const { return bIsCriticalHit; }
 	bool IsBlockedHit() const { return bIsBlockedHit; }
+	bool IsDebuffHit() const { return bIsDebuffHit; }
 	bool IsSuccessfulDebuff() const { return bIsSuccessfulDebuff; }
 	float GetDebuffDamage() const { return DebuffDamage; }
 	float GetDebuffDuration() const { return DebuffDuration; }
 	float GetDebuffFrequency() const { return DebuffFrequency; }
 	FGameplayTag GetDamageType() const { return *DamageType; }
 	FVector GetDeathImpulse() const { return DeathImpulse; }
+	FVector GetKnockbackImpulse() const { return KnockbackImpulse; }
 
 	void SetIsCriticalHit(bool Value) { bIsCriticalHit = Value;  }
 	void SetIsBlockedHit(bool Value) { bIsBlockedHit = Value;  }
+	void SetIsDebuffHit(bool Value) { bIsDebuffHit = Value;  }
 	void SetIsSuccessfulDebuff(bool Value) { bIsSuccessfulDebuff = Value;  }
 	void SetDebuffDuration(float Value) { DebuffDuration = Value; }
 	void SetDebuffFrequency(float Value) { DebuffFrequency = Value; }
 	void SetDebuffDamage(float Value) { DebuffDamage = Value; }
 	void SetDamageType(TSharedPtr<FGameplayTag> Value) { DamageType = Value; }
 	void SetDeathImpulse(const FVector& Value) { DeathImpulse = Value; }
+	void SetKnockbackImpulse(const FVector& Value) { KnockbackImpulse = Value; }
 
 	/** Returns the actual struct used for serialization, subclasses must override this! */
 	virtual UScriptStruct* GetScriptStruct() const
@@ -90,6 +109,9 @@ protected:
 	bool bIsCriticalHit = false;
 	
 	UPROPERTY()
+	bool bIsDebuffHit = false;
+	
+	UPROPERTY()
 	bool bIsSuccessfulDebuff = false;
 	
 	UPROPERTY()
@@ -103,6 +125,9 @@ protected:
 	
 	UPROPERTY()
 	FVector DeathImpulse = FVector::ZeroVector;
+	
+	UPROPERTY()
+	FVector KnockbackImpulse = FVector::ZeroVector;
 	
 	TSharedPtr<FGameplayTag> DamageType;
 };

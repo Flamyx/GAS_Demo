@@ -20,7 +20,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void CauseDamage(AActor* TargetActor);
-	
+	UFUNCTION(BlueprintPure)
 	FAuraDamageEffectParams MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor = nullptr) const;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
@@ -29,7 +29,7 @@ public:
 	FScalableFloat Damage;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	float DebuffChance = 20.f;
+	float DebuffChance = 0.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float DebuffDamage = 5.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
@@ -38,6 +38,12 @@ public:
 	float DebuffDuration = 4.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
 	float DeathImpulseMagnitude = 1.2f;
+	UPROPERTY(EditDefaultsOnly, Category = "Knockback")
+	float KnockbackImpulseMagnitude = .2f;
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	FVector DeathImpulse = FVector::ZeroVector;
+	UPROPERTY(EditDefaultsOnly, Category = "Knockback")
+	FVector KnockbackImpulse = FVector::ZeroVector;
 	
 protected: 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

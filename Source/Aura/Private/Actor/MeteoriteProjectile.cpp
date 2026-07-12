@@ -72,7 +72,7 @@ void AMeteoriteProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, A
 			{
 				DamageEffectParams.TargetASC = TargetASC;
 				DamageEffectParams.DeathImpulse = GetActorForwardVector() * DamageEffectParams.DeathImpulseMagnitude;
-				UAuraAbilitySystemLibrary::ApplyDamageEffectParams(DamageEffectParams);
+				UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 			}
 		}
 		

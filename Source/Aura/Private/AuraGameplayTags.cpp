@@ -9,6 +9,22 @@ FAuraGameplayTags FAuraGameplayTags::GameplayTags;
 void FAuraGameplayTags::InitializeNativeGameplayTags()
 {
 	/*
+	Player tags
+	*/
+	GameplayTags.Player_Block_CursorTrace= UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.CursorTrace"),
+		FString("Block tracing under the cursor"));
+	GameplayTags.Player_Block_InputHeld= UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.InputHeld"),
+		FString("Block tracing under the cursor"));
+	GameplayTags.Player_Block_InputReleased= UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.InputReleased"),
+		FString("Block tracing under the cursor"));
+	GameplayTags.Player_Block_InputPressed= UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.InputPressed"),
+		FString("Block tracing under the cursor"));
+	
+	/*
 	Primary attributes
 	*/
 	GameplayTags.Attributes_Primary_Strength= UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -214,7 +230,15 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Tag granted when ability is used")
 	);
 	
+	GameplayTags.Knockback = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Knockback"),
+		FString("Tag granted when Knockback is used")
+	);
 	
+	GameplayTags.DeathImpulse = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("DeathImpulse"),
+		FString("Tag granted when DeathImpulse is used")
+	);
 
 	/*
 	Abilities

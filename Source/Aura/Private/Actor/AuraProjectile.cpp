@@ -28,9 +28,19 @@ AAuraProjectile::AAuraProjectile()
 	Sphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
-	ProjectileMovement->InitialSpeed = 550.f;
-	ProjectileMovement->MaxSpeed = 550.f;
+	ProjectileMovement->InitialSpeed = InitialSpeed;
+	ProjectileMovement->MaxSpeed = MaxSpeed;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
+	
+}
+
+void AAuraProjectile::EnableHoming(AActor* TargetActor)
+{
+	
+	ProjectileMovement->HomingAccelerationMagnitude = 5.f;
+	ProjectileMovement->bRotationFollowsVelocity = true;
+	ProjectileMovement->HomingTargetComponent =	TargetActor->GetRootComponent();
+	ProjectileMovement->bIsHomingProjectile = true;
 }
 
 // Called when the game starts or when spawned
@@ -50,7 +60,12 @@ void AAuraProjectile::OnHit()
 	                                      GetActorLocation(),
 	                                      FRotator::ZeroRotator);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-	if (LoopingSoundComponent) LoopingSoundComponent->Stop();
+	if (LoopingSoundComponent)
+	{
+		LoopingSoundComponent->Stop();
+		LoopingSoundComponent->DestroyComponent();
+	}
+	bHit = true;
 }
 
 void AAuraProjectile::Destroyed()
@@ -76,8 +91,17 @@ void AAuraProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
 		{
 			DamageEffectParams.TargetASC = TargetASC;
-			DamageEffectParams.DeathImpulse = GetActorForwardVector() * DamageEffectParams.DeathImpulseMagnitude;
-			UAuraAbilitySystemLibrary::ApplyDamageEffectParams(DamageEffectParams);
+			FRotator Rotator = GetActorRotation();
+			Rotator.Roll *= 1.1f;
+			Rotator.Pitch *= 0.95f;
+			Rotator.Yaw *= 0.95f;
+			DamageEffectParams.DeathImpulse = Rotator.Vector() * DamageEffectParams.DeathImpulseMagnitude;
+			
+			FRotator Rotation = GetActorRotation();
+			Rotation.Pitch = 45.f;
+			
+			DamageEffectParams.KnockbackImpulse = Rotation.Vector() * DamageEffectParams.KnockbackImpulseMagnitude;
+			UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		}
 		Destroy();
 	}

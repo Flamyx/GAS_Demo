@@ -14,6 +14,11 @@ struct FAuraGameplayTags
 public:
 	static const FAuraGameplayTags& Get() { return GameplayTags; }
 	static void InitializeNativeGameplayTags();
+	
+	FGameplayTag Player_Block_CursorTrace;
+	FGameplayTag Player_Block_InputPressed;
+	FGameplayTag Player_Block_InputHeld;
+	FGameplayTag Player_Block_InputReleased;
 
 	FGameplayTag Attributes_Primary_Strength;
 	FGameplayTag Attributes_Primary_Intelligence;
@@ -78,6 +83,8 @@ public:
 
 	FGameplayTag HitReact;
 	FGameplayTag Cooldown;
+	FGameplayTag Knockback;
+	FGameplayTag DeathImpulse;
 	
 	FGameplayTag Status_Equipped;
 	FGameplayTag Status_Unlocked;

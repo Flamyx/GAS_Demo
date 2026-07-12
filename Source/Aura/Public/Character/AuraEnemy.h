@@ -40,7 +40,7 @@ public:
 	virtual FTaggedMontage ChooseAttack_Implementation() override;
 	/* End combat interface */
 
-
+		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TArray<FTaggedMontage> TaggedMontages;
 	

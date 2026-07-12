@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraSystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/EnemyInterface.h"
 #include "Input/AuraInputConfig.h"
@@ -77,6 +78,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UNiagaraSystem> ClickToMoveComponent;
 
 	void AutoRun();
 

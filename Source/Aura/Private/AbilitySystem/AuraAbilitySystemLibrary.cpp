@@ -160,7 +160,7 @@ float UAuraAbilitySystemLibrary::GetXPReward(const UObject* WorldContextObject, 
 	return XPReward;
 }
 
-FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffectParams(FAuraDamageEffectParams DamageEffectParams)
+FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(FAuraDamageEffectParams DamageEffectParams)
 {
 	FGameplayEffectContextHandle ContextHandle = DamageEffectParams.SourceASC->MakeEffectContext();
 	ContextHandle.AddSourceObject(DamageEffectParams.SourceASC->GetAvatarActor());
@@ -172,10 +172,45 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffectParams(
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, AuraTags.Debuff_Duration, DamageEffectParams.DebuffDuration);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, AuraTags.Debuff_Frequency, DamageEffectParams.DebuffFrequency);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, AuraTags.Debuff_Damage, DamageEffectParams.DebuffDamage);
+	SetDeathImpulse(ContextHandle, DamageEffectParams.DeathImpulse);
+	SetKnockbackImpulse(ContextHandle, DamageEffectParams.KnockbackImpulse);
 	
 	DamageEffectParams.TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
 	
 	return ContextHandle;
+}
+
+TArray<FRotator> UAuraAbilitySystemLibrary::GetEvenlyScacedRotators(const FVector& Forward, const FVector& Axis,
+	float Spread, int NumProjectiles)
+{
+	const FVector LeftOfSpread = Forward.RotateAngleAxis(-Spread / 2.f, Axis);
+	TArray<FRotator> Ret = TArray<FRotator>();
+	Ret.SetNum(NumProjectiles);
+	for (int i = 0; i < NumProjectiles; ++i)
+	{
+		Ret[i] = LeftOfSpread.RotateAngleAxis(Spread * i / NumProjectiles, Axis).Rotation();
+	}
+	
+	return Ret;
+}
+
+FPredictionKey UAuraAbilitySystemLibrary::GetPredictionKey(const FGameplayAbilitySpec& Spec)
+{
+	TArray<UGameplayAbility*> AbilityInstances = Spec.GetAbilityInstances();
+
+	// 2. Loop through instances to find a valid running instance
+	for (UGameplayAbility* Instance : AbilityInstances)
+	{
+		if (Instance && Instance->IsActive())
+		{
+			// 3. Extract the key safely using the modern instance API
+			FGameplayAbilityActivationInfo ActivationInfo = Instance->GetCurrentActivationInfo();
+			return ActivationInfo.GetActivationPredictionKey();
+		}
+	}
+
+	// 4. Fallback if no instances are active or the ability is not currently executing
+	return FPredictionKey();
 }
 
 UBehaviorTree* UAuraAbilitySystemLibrary::GetBehaviorTree(const UObject* WorldContextObject, ECharacterClass CharacterClass)
@@ -216,6 +251,15 @@ bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle
 	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->IsCriticalHit();
+	}
+	return false;
+}
+
+bool UAuraAbilitySystemLibrary::IsDebuffHit(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->IsDebuffHit();
 	}
 	return false;
 }
@@ -275,6 +319,15 @@ FVector UAuraAbilitySystemLibrary::GetDeathImpulse(const FGameplayEffectContextH
 	return FVector::ZeroVector;
 }
 
+FVector UAuraAbilitySystemLibrary::GetKnockbackImpulse(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetKnockbackImpulse();
+	}
+	return FVector::ZeroVector;
+}
+
 void UAuraAbilitySystemLibrary::SetIsSuccessfulDebuff(FGameplayEffectContextHandle& EffectContextHandle,
                                                       bool bInIsSuccessfulDebuff)
 {
@@ -309,6 +362,15 @@ void UAuraAbilitySystemLibrary::SetDeathImpulse(FGameplayEffectContextHandle& Ef
 	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
 	{
 		AuraEffectContext->SetDeathImpulse(InImpulse);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetKnockbackImpulse(FGameplayEffectContextHandle& EffectContextHandle,
+	const FVector& InImpulse)
+{
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetKnockbackImpulse(InImpulse);
 	}
 }
 

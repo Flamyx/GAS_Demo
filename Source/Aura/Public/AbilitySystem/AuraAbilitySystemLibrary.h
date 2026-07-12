@@ -56,6 +56,9 @@ public:
 	static bool IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle);
 	
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
+	static bool IsDebuffHit(const FGameplayEffectContextHandle& EffectContextHandle);
+	
+	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
 	static bool IsSuccessfulDebuff(const FGameplayEffectContextHandle& EffectContextHandle);
 
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
@@ -72,6 +75,9 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
 	static FVector GetDeathImpulse(const FGameplayEffectContextHandle& EffectContextHandle);
+	
+	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
+	static FVector GetKnockbackImpulse(const FGameplayEffectContextHandle& EffectContextHandle);
 	
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
 	static void SetIsSuccessfulDebuff(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, bool bInIsSuccessfulDebuff);
@@ -97,6 +103,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
 	static void SetDeathImpulse(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const FVector& InImpulse);
 	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Gameplay Effects")
+	static void SetKnockbackImpulse(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const FVector& InImpulse);
+	
 	UFUNCTION(BlueprintCallable, Category = "Gameplay Mechanics")
 	static void GetLivePlayersWithinRadius(const UObject* WorldContextObject, TArray<AActor*>& OutOverlappingActors,
 		const TArray<AActor*>& ActorsToIgnore, float Radius, const FVector& SphereOrigin);
@@ -118,5 +127,10 @@ public:
 
 	static float GetXPReward(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
 	
-	static FGameplayEffectContextHandle ApplyDamageEffectParams(FAuraDamageEffectParams DamageEffectParams);
+	UFUNCTION(BlueprintCallable)
+	static FGameplayEffectContextHandle ApplyDamageEffect(FAuraDamageEffectParams DamageEffectParams);
+	
+	static TArray<FRotator> GetEvenlyScacedRotators(const FVector& Forward, const FVector& Axis, float Spread, int NumProjectiles);
+	
+	static FPredictionKey GetPredictionKey(const FGameplayAbilitySpec& Spec);
 };

@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura → UE 5.8 with MCP + VibeUE</title>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --ink: #1b2433;
+    --muted: #57647c;
+    --line: #dbe2ee;
+    --accent: #2467d6;
+    --accent-soft: #e5edfb;
+    --warn: #9a5b07;
+    --warn-bg: #faf1df;
+    --warn-line: #e4c890;
+    --ok: #1e6f44;
+    --ok-bg: #e7f4ec;
+    --ok-line: #a9d4ba;
+    --code-bg: #131a28;
+    --code-ink: #d8e3f6;
+    --code-accent: #86b4ff;
+    --code-cmt: #64748f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151e;
+      --panel: #161d2a;
+      --ink: #dde5f2;
+      --muted: #93a0b7;
+      --line: #29344a;
+      --accent: #6ba3ff;
+      --accent-soft: #1b2a45;
+      --warn: #e3b56b;
+      --warn-bg: #2a2214;
+      --warn-line: #59461f;
+      --ok: #7dcf9e;
+      --ok-bg: #14261c;
+      --ok-line: #29513a;
+      --code-bg: #0c1220;
+      --code-ink: #d8e3f6;
+      --code-accent: #86b4ff;
+      --code-cmt: #64748f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151e;
+    --panel: #161d2a;
+    --ink: #dde5f2;
+    --muted: #93a0b7;
+    --line: #29344a;
+    --accent: #6ba3ff;
+    --accent-soft: #1b2a45;
+    --warn: #e3b56b;
+    --warn-bg: #2a2214;
+    --warn-line: #59461f;
+    --ok: #7dcf9e;
+    --ok-bg: #14261c;
+    --ok-line: #29513a;
+    --code-bg: #0c1220;
+    --code-ink: #d8e3f6;
+    --code-accent: #86b4ff;
+    --code-cmt: #64748f;
+  }
+  :root[data-theme="light"] {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --ink: #1b2433;
+    --muted: #57647c;
+    --line: #dbe2ee;
+    --accent: #2467d6;
+    --accent-soft: #e5edfb;
+    --warn: #9a5b07;
+    --warn-bg: #faf1df;
+    --warn-line: #e4c890;
+    --ok: #1e6f44;
+    --ok-bg: #e7f4ec;
+    --ok-line: #a9d4ba;
+    --code-bg: #131a28;
+    --code-ink: #d8e3f6;
+    --code-accent: #86b4ff;
+    --code-cmt: #64748f;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 20px 72px;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  header { padding: 52px 0 8px; }
+  .meta-strip {
+    display: flex; flex-wrap: wrap; gap: 8px 20px;
+    font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 22px;
+    font-variant-numeric: tabular-nums;
+  }
+  .meta-strip b { color: var(--accent); font-weight: 600; }
+  h1 {
+    font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    font-size: clamp(1.7rem, 4.5vw, 2.5rem);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.15;
+    margin: 0 0 14px; text-wrap: balance;
+  }
+  .lede { color: var(--muted); font-size: 1.02rem; max-width: 62ch; margin: 0; }
+
+  /* ---------- outcome card ---------- */
+  .outcomes {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px; margin: 34px 0 10px;
+  }
+  .outcome {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 6px; padding: 14px 16px;
+  }
+  .outcome .k {
+    font-size: 0.72rem; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; display: block; margin-bottom: 5px;
+  }
+  .outcome .v { font-size: 0.9rem; color: var(--ink); }
+
+  /* ---------- phases ---------- */
+  .phase {
+    display: grid; grid-template-columns: 44px 1fr; gap: 0 20px;
+    margin-top: 46px; position: relative;
+  }
+  .phase::before {
+    content: ""; position: absolute; left: 21px; top: 48px; bottom: -46px;
+    width: 2px; background: var(--line);
+  }
+  .phase:last-of-type::before { display: none; }
+  .ph-num {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent);
+    border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.05rem; font-variant-numeric: tabular-nums;
+    position: relative; z-index: 1;
+  }
+  .ph-body { min-width: 0; padding-top: 6px; }
+  h2 {
+    font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    font-size: 1.28rem; font-weight: 700; letter-spacing: -0.01em;
+    margin: 0 0 4px; text-wrap: balance;
+  }
+  .ph-goal { color: var(--muted); font-size: 0.88rem; margin: 0 0 16px; }
+  .ph-body > p { max-width: 66ch; margin: 0 0 14px; }
+  .ph-body li { max-width: 62ch; margin-bottom: 7px; }
+  .ph-body ol, .ph-body ul { padding-left: 22px; margin: 0 0 14px; }
+
+  h3 {
+    font-size: 0.98rem; font-weight: 650; margin: 22px 0 8px;
+  }
+
+  code {
+    font-family: "Cascadia Code", Consolas, ui-monospace, monospace;
+    font-size: 0.86em;
+    background: var(--accent-soft); color: var(--ink);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  .term {
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 6px; padding: 13px 16px; margin: 12px 0 16px;
+    overflow-x: auto;
+  }
+  .term pre {
+    margin: 0; font-family: "Cascadia Code", Consolas, ui-monospace, monospace;
+    font-size: 0.84rem; line-height: 1.65; white-space: pre;
+  }
+  .term .c { color: var(--code-cmt); }
+  .term .a { color: var(--code-accent); }
+  .term-label {
+    display: block; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--code-cmt); margin-bottom: 7px;
+    font-family: "Segoe UI", system-ui, sans-serif;
+  }
+
+  .callout {
+    border: 1px solid var(--warn-line); background: var(--warn-bg);
+    border-radius: 6px; padding: 12px 16px; margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  .callout .tag, .checkpoint .tag {
+    display: block; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .callout .tag { color: var(--warn); }
+  .callout p { margin: 0; max-width: 66ch; }
+  .callout p + p { margin-top: 8px; }
+
+  .checkpoint {
+    border: 1px solid var(--ok-line); background: var(--ok-bg);
+    border-radius: 6px; padding: 12px 16px; margin: 20px 0 0;
+    font-size: 0.92rem;
+  }
+  .checkpoint .tag { color: var(--ok); }
+  .checkpoint p { margin: 0; max-width: 66ch; }
+
+  table {
+    border-collapse: collapse; width: 100%; font-size: 0.88rem; margin: 12px 0 16px;
+  }
+  .tbl-wrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  td:first-child { white-space: nowrap; font-weight: 600; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover, a:focus-visible { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  footer {
+    margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 0.84rem; color: var(--muted);
+  }
+  footer ul { padding-left: 20px; margin: 8px 0 0; }
+  footer li { margin-bottom: 4px; }
+
+  @media (max-width: 560px) {
+    .phase { grid-template-columns: 34px 1fr; gap: 0 14px; }
+    .ph-num { width: 34px; height: 34px; font-size: 0.9rem; }
+    .phase::before { left: 16px; top: 38px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="meta-strip">
+    <span>Project <b>Aura</b></span>
+    <span>Engine <b>5.7 → 5.8</b></span>
+    <span>Toolchain <b>Native MCP + VibeUE</b></span>
+    <span>2026-07-12</span>
+  </div>
+  <h1>Upgrading Aura to UE 5.8 and wiring in the AI toolchain</h1>
+  <p class="lede">Six phases, in order: protect the working 5.7 project, move the engine version, turn on Epic's built-in MCP server, connect Claude Code, layer VibeUE on top, and prove the whole chain works. Each phase ends with a checkpoint you can verify before moving on.</p>
+</header>
+
+<div class="outcomes">
+  <div class="outcome"><span class="k">Engine</span><span class="v">Aura building and playing on UE 5.8, on its own git branch</span></div>
+  <div class="outcome"><span class="k">MCP</span><span class="v">Editor serving tools at <code>127.0.0.1:8000/mcp</code>, Claude Code connected</span></div>
+  <div class="outcome"><span class="k">VibeUE</span><span class="v">Extended toolsets (Blueprints, UMG, Niagara) on top of native MCP</span></div>
+</div>
+
+<!-- ============ PHASE 1 ============ -->
+<section class="phase">
+  <div class="ph-num">1</div>
+  <div class="ph-body">
+    <h2>Secure the 5.7 project</h2>
+    <p class="ph-goal">Goal: a clean commit on 5.7 you can always return to.</p>
+
+    <div class="callout">
+      <span class="tag">Do this first — your tree is dirty</span>
+      <p>As of today, <code>UE5.7_dev</code> has ~30 modified source files plus untracked spell classes (FireBolt, ElectrocuteCourse) that have never been committed. An engine upgrade on top of uncommitted work means you can't cleanly separate "upgrade breakage" from "my in-progress changes."</p>
+    </div>
+
+    <div class="term"><span class="term-label">PowerShell — project root</span><pre><span class="c"># commit everything working on 5.7, then branch for the upgrade</span>
+git add -A
+git commit -m "Pre-5.8 checkpoint: working Electrocute beam, debuff params"
+git checkout -b <span class="a">UE5.8_dev</span></pre></div>
+
+    <p>Install <b>UE 5.8</b> from the Epic Games Launcher alongside 5.7 — don't replace it. Keeping both installed lets you open the old branch in the old editor at any time.</p>
+
+    <div class="callout">
+      <span class="tag">One-way door</span>
+      <p>Assets re-saved in 5.8 cannot be opened by 5.7 again. Git makes this survivable — <code>Content/</code> is committed, so the branch is your rollback — but it's why the upgrade gets its own branch and why Epic's own guidance is to convert a <em>copy</em>, never your only copy.</p>
+    </div>
+
+    <div class="checkpoint"><span class="tag">Checkpoint</span><p><code>git log</code> shows the checkpoint commit; <code>git branch</code> shows you on <code>UE5.8_dev</code>; the Launcher lists both 5.7 and 5.8.</p></div>
+  </div>
+</section>
+
+<!-- ============ PHASE 2 ============ -->
+<section class="phase">
+  <div class="ph-num">2</div>
+  <div class="ph-body">
+    <h2>Move the project to 5.8</h2>
+    <p class="ph-goal">Goal: Aura compiles, opens, and plays in the 5.8 editor.</p>
+
+    <ol>
+      <li><b>Switch the engine association.</b> Right-click <code>Aura.uproject</code> → <i>Switch Unreal Engine version…</i> → 5.8 (this rewrites <code>"EngineAssociation"</code> and regenerates <code>Aura.sln</code>). Editing the field by hand and then <i>Generate Visual Studio project files</i> works identically.</li>
+      <li><b>Build before opening the editor.</b> Build the <code>Aura</code> target (Development Editor, Win64) from Visual Studio or Rider. Fixing C++ errors in the IDE beats staring at a failed module-load dialog. No breaking GameplayAbilities changes are documented for 5.8, so expect deprecation warnings rather than hard errors — but 5.8's more aggressive unity-build grouping can surface missing <code>#include</code>s that older builds masked.</li>
+      <li><b>Open the editor and let it churn.</b> First launch recompiles shaders and updates asset caches; that's normal and slow once.</li>
+      <li><b>Re-save deliberately, not wholesale.</b> Open the maps and core Blueprints you actually use (Dungeon map, BP_AuraHUD, ability BPs) and save as prompted. Skip "Fix Up Redirectors on everything" heroics until the project is proven stable.</li>
+    </ol>
+
+    <div class="callout">
+      <span class="tag">Niagara — learned the hard way</span>
+      <p>Do <b>not</b> blanket-accept "Upgrade to newest version" prompts on Niagara module scripts. Upgrading NS_ElectricBeam's modules recreated <code>Initialize Particle</code> with fresh defaults that silently overwrote every particle position and collapsed the beam. If 5.8 offers module upgrades on the VFX pack assets, decline first, confirm the effect works as-is, and upgrade one module at a time with the preview open.</p>
+    </div>
+
+    <h3>Smoke test in PIE</h3>
+    <ul>
+      <li>FireBolt and Meteorite fire, damage, and show floating combat text</li>
+      <li>Electrocute beam reaches the cursor hit location (the fix from this week)</li>
+      <li>Spell menu equips/upgrades; attribute menu spends points</li>
+      <li>A quick 2-player PIE session — the equip/upgrade RPC pairs are the most version-sensitive code you have</li>
+    </ul>
+
+    <div class="checkpoint"><span class="tag">Checkpoint</span><p>Clean build, editor opens without module errors, smoke test passes. Commit: <code>git commit -m "Aura on UE 5.8"</code>.</p></div>
+  </div>
+</section>
+
+<!-- ============ PHASE 3 ============ -->
+<section class="phase">
+  <div class="ph-num">3</div>
+  <div class="ph-body">
+    <h2>Enable the native MCP server</h2>
+    <p class="ph-goal">Goal: the editor serves MCP tools on localhost.</p>
+
+    <p>UE 5.8 ships an MCP server inside the editor process — no third-party bridge needed. It's experimental: localhost-only, no authentication, APIs subject to change. Treat it as a dev-workflow tool.</p>
+
+    <ol>
+      <li><b>Enable the plugin.</b> <i>Edit → Plugins</i> → search <b>"Unreal MCP"</b> → enable (its dependency <b>Toolset Registry</b> enables automatically) → restart the editor.</li>
+      <li><b>Auto-start the server.</b> <i>Edit → Editor Preferences → General → Model Context Protocol</i> → enable <b>Auto Start Server</b>. Default endpoint: <code>http://127.0.0.1:8000/mcp</code>. To start manually instead, use the console:</li>
+    </ol>
+
+    <div class="term"><span class="term-label">Editor console ( ` )</span><pre>ModelContextProtocol.StartServer      <span class="c"># optional port arg, e.g. 8000</span></pre></div>
+
+    <ol start="3">
+      <li><b>Enable toolsets.</b> The server itself exposes nothing — tools come from toolset plugins, each <em>disabled by default</em>. In <i>Edit → Plugins</i>, search "Toolset" and enable at minimum:
+        <ul>
+          <li><b>Editor Toolset</b> — actors, Blueprints, properties, screenshots, PIE control</li>
+          <li><b>UMG Toolset</b> — widget Blueprint authoring (your spell/attribute menus)</li>
+          <li><b>Niagara Toolsets</b> — system and emitter authoring</li>
+        </ul>
+        Or enable <b>All Toolsets</b> and prune later. Restart after changing plugins.</li>
+    </ol>
+
+    <div class="checkpoint"><span class="tag">Checkpoint</span><p>Output Log shows the MCP server listening on port 8000 after editor start.</p></div>
+  </div>
+</section>
+
+<!-- ============ PHASE 4 ============ -->
+<section class="phase">
+  <div class="ph-num">4</div>
+  <div class="ph-body">
+    <h2>Connect Claude Code</h2>
+    <p class="ph-goal">Goal: <code>/mcp</code> shows the editor's tools, green.</p>
+
+    <ol>
+      <li><b>Generate the client config</b> from the editor console:</li>
+    </ol>
+
+    <div class="term"><span class="term-label">Editor console ( ` )</span><pre>ModelContextProtocol.GenerateClientConfig <span class="a">ClaudeCode</span></pre></div>
+
+    <p>This writes <code>.mcp.json</code> to the project root:</p>
+
+    <div class="term"><span class="term-label">.mcp.json (generated)</span><pre>{
+  "mcpServers": {
+    "unreal-mcp": {
+      "type": "http",
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}</pre></div>
+
+    <ol start="2">
+      <li><b>Start Claude Code from the project root</b> (where <code>.mcp.json</code> lives) with the editor running. The config is auto-discovered; approve the project-scoped server when prompted.</li>
+      <li><b>Verify</b> with <code>/mcp</code> — <code>unreal-mcp</code> should be connected with a tool count &gt; 0. Zero tools almost always means no toolsets enabled (Phase 3, step 3).</li>
+    </ol>
+
+    <div class="callout">
+      <span class="tag">Commit the config</span>
+      <p><code>.mcp.json</code> is project-scoped and safe to commit — it contains only a loopback URL. Anyone opening the project with UE 5.8 + Claude Code gets the connection for free.</p>
+    </div>
+
+    <div class="checkpoint"><span class="tag">Checkpoint</span><p>Ask Claude Code: <i>"List the actors in the currently open level."</i> A real actor list back = the loop is closed.</p></div>
+  </div>
+</section>
+
+<!-- ============ PHASE 5 ============ -->
+<section class="phase">
+  <div class="ph-num">5</div>
+  <div class="ph-body">
+    <h2>Add VibeUE on top</h2>
+    <p class="ph-goal">Goal: VibeUE's extended tools appear alongside the native ones.</p>
+
+    <p>VibeUE extends the three native systems you just enabled (ToolsetRegistry, ModelContextProtocol, AgentSkill) — which is why native MCP had to come first. Two install routes:</p>
+
+    <div class="tbl-wrap"><table>
+      <tr><th>Route</th><th>How</th><th>Pick when</th></tr>
+      <tr><td>Fab</td><td>Get VibeUE on Fab, add to project via the Epic Games Launcher</td><td>You want updates managed for you</td></tr>
+      <tr><td>Git</td><td>Clone the <code>5-8</code> branch into <code>Plugins/</code> (below)</td><td>You want source and faster fixes</td></tr>
+    </table></div>
+
+    <div class="term"><span class="term-label">PowerShell — project root</span><pre>cd Plugins
+git clone -b <span class="a">5-8</span> https://github.com/kevinpbuckley/VibeUE.git
+cd VibeUE
+.\BuildAndLaunchGame.ps1</pre></div>
+
+    <ol>
+      <li>Enable <b>VibeUE</b> in <i>Edit → Plugins</i>, restart the editor.</li>
+      <li>Generate its agent instructions from the editor console:</li>
+    </ol>
+
+    <div class="term"><span class="term-label">Editor console ( ` )</span><pre>VibeUE.GenerateAgentConfig <span class="a">ClaudeCode</span></pre></div>
+
+    <div class="callout">
+      <span class="tag">This writes to CLAUDE.md — and Aura already has one</span>
+      <p>Aura's <code>CLAUDE.md</code> carries the project's architecture documentation (GAS layering, tag conventions, WidgetController pattern). Before running the command, check whether it appends or overwrites: <code>git diff CLAUDE.md</code> immediately after. If it clobbered the file, restore yours and paste VibeUE's generated section in manually.</p>
+      <p>Optional: VibeUE's hosted terrain tools need a free API key from vibeue.com — everything else works without it.</p>
+    </div>
+
+    <div class="checkpoint"><span class="tag">Checkpoint</span><p><code>/mcp</code> in Claude Code shows a larger tool count than in Phase 4, including VibeUE tool names.</p></div>
+  </div>
+</section>
+
+<!-- ============ PHASE 6 ============ -->
+<section class="phase">
+  <div class="ph-num">6</div>
+  <div class="ph-body">
+    <h2>Prove the chain end-to-end</h2>
+    <p class="ph-goal">Goal: one AI-driven edit, verified in the editor, then a final commit.</p>
+
+    <ol>
+      <li><b>Read test:</b> "List every Blueprint under <code>Content/Blueprints</code> that derives from AuraDamageGameplayAbility and report its damage type tag." Cross-check one answer by hand.</li>
+      <li><b>Write test (low stakes):</b> have it create a throwaway test asset — a new folder and a dummy Blueprint — then delete it. Confirms write tools work without touching real content.</li>
+      <li><b>Real-workflow test:</b> something you'd actually do — e.g., "Open NS_ElectricBeam and report the Beam Emitter Setup bindings on each enabled emitter." You know the correct answer from this week; a correct report means the Niagara toolset genuinely works.</li>
+      <li><b>Commit the toolchain state:</b></li>
+    </ol>
+
+    <div class="term"><span class="term-label">PowerShell — project root</span><pre>git add -A
+git commit -m "UE 5.8: native MCP + toolsets + VibeUE wired to Claude Code"</pre></div>
+
+    <div class="checkpoint"><span class="tag">Done</span><p>Aura runs on 5.8; the editor serves MCP; Claude Code drives both native and VibeUE tools; all of it reproducible from the branch.</p></div>
+  </div>
+</section>
+
+<footer>
+  <b>Sources</b>
+  <ul>
+    <li><a href="https://dev.epicgames.com/documentation/unreal-engine/unreal-mcp-in-unreal-editor">Epic — Unreal MCP in Unreal Editor (UE 5.8)</a></li>
+    <li><a href="https://dev.epicgames.com/documentation/unreal-engine/updating-projects-to-newer-versions-of-unreal-engine">Epic — Updating Projects to Newer Versions of Unreal Engine</a></li>
+    <li><a href="https://dev.epicgames.com/documentation/unreal-engine/unreal-engine-5-8-release-notes">Epic — UE 5.8 Release Notes</a></li>
+    <li><a href="https://www.vibeue.com/docs">VibeUE — Setup documentation</a></li>
+    <li><a href="https://github.com/kevinpbuckley/VibeUE">VibeUE — GitHub (5-8 branch)</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>

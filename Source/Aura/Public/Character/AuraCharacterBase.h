@@ -23,6 +23,7 @@ public:
 
 	/* Combat Interface */
 	virtual void Die(const FVector& DeathImpulse) override;
+	virtual void Knockback(const FVector& KnockbackImpulse) override;
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& SocketTag) override;
 	virtual bool IsDead_Implementation() const override;
@@ -34,6 +35,7 @@ public:
 	virtual ECharacterClass GetCharacterClass_Implementation() override;
 	virtual FOnASCRegistered GetOnASCRegisteredDelegate() override;
 	virtual FOnDeath GetOnDeathDelegate() override;
+	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;
 	/* End Combat Interface */
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -114,8 +116,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MinionLimit = 0;
 	
-	// UPROPERTY(EditAnywhere)
-	// TObjectPtr<UDebuffNiagaraComponent> BurnDebuffComponent;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UDebuffNiagaraComponent> BurnDebuffComponent;
+	
+	UFUNCTION(Server, Reliable)
+	void HandleKnockback(const FVector& KnockbackImpulse);
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")

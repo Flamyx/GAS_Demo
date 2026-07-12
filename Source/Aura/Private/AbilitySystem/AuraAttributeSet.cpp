@@ -108,13 +108,15 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		SetHealth(FMath::Clamp(NewHealth, 0, GetMaxHealth()));
 
 		const bool bFatal = NewHealth <= 0.f;
-		if (!bFatal)
+		//FAuraGameplayEffectContext* AuraDebuffEffectContext = static_cast<FAuraGameplayEffectContext*>(Props.EffectContextHandle.Get());
+		if (!bFatal && !UAuraAbilitySystemLibrary::IsDebuffHit(Props.EffectContextHandle))
 		{
+			Knockback(Props);
 			FGameplayTagContainer TagContainer;
 			TagContainer.AddTag(FAuraGameplayTags::Get().HitReact);
 			Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
 		}
-		else
+		else if (bFatal)
 		{
 			ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor);
 			if (CombatInterface)
@@ -128,10 +130,10 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
 		const bool bCriticalHit = UAuraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
 		ShowFloatingText(Props, Damage, bBlock, bCriticalHit);
-		// if (UAuraAbilitySystemLibrary::IsSuccessfulDebuff(Props.EffectContextHandle))
-		// {
-		// 	Debuff(Props);
-		// }
+		if (UAuraAbilitySystemLibrary::IsSuccessfulDebuff(Props.EffectContextHandle))
+		{
+			Debuff(Props);
+		}
 	}
 }
 
@@ -187,7 +189,6 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 	GrantedTagsComponent.SetAndApplyTargetTagChanges(InheritedTagContainer);
 	
 	FGameplayModifierInfo Mod = FGameplayModifierInfo();
-
 	Mod.Attribute = GetIncomingDamageAttribute();
 	Mod.ModifierOp = EGameplayModOp::Additive;
 	Mod.ModifierMagnitude = FScalableFloat(UAuraAbilitySystemLibrary::GetDebuffDamage(Props.EffectContextHandle));
@@ -202,8 +203,21 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 		FAuraGameplayEffectContext* AuraDebuffEffectContext = static_cast<FAuraGameplayEffectContext*>(ContextHandle.Get());
 		TSharedPtr<FGameplayTag> DebuffType = MakeShareable<FGameplayTag>(new FGameplayTag(DamageType));
 		AuraDebuffEffectContext->SetDamageType(DebuffType);
-		
+		AuraDebuffEffectContext->SetIsDebuffHit(true);
 		Props.TargetASC->ApplyGameplayEffectSpecToSelf(*MutableSpec);
+	}
+}
+
+void UAuraAttributeSet::Knockback(const FEffectProperties& Props)
+{
+	auto TargetCharacter = Props.TargetCharacter;
+	if (IsValid(TargetCharacter))
+	{
+		auto KI = UAuraAbilitySystemLibrary::GetKnockbackImpulse(Props.EffectContextHandle);
+		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Red, KI.ToString());
+		ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor);
+		CombatInterface->Knockback(KI);
+		//TargetCharacter->LaunchCharacter(KI, false, false);
 	}
 }
 

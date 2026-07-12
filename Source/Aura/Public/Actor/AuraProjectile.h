@@ -24,7 +24,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"));
 	FAuraDamageEffectParams DamageEffectParams;
-
+	
+	UFUNCTION(BlueprintCallable)
+	void EnableHoming(AActor* TargetActor);
+	
+	UPROPERTY()
+	TObjectPtr<USceneComponent> HomingTargetComponent;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -53,6 +59,15 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundBase> LoopingSound;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float HomingAccelerationMagnitude = 0.f;
+	
+	UPROPERTY(EditAnywhere)
+	float InitialSpeed = 500.f;
+	
+	UPROPERTY(EditAnywhere)
+	float MaxSpeed = 2000.f;
 
 private:
 	UPROPERTY(EditAnywhere)

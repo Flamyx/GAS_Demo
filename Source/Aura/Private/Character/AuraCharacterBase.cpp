@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Aura/Aura.h"
 #include "AuraGameplayTags.h"
+#include "BlueprintCompiledStatement.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -26,9 +27,9 @@ AAuraCharacterBase::AAuraCharacterBase()
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 	
-	// BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComponent");
-	// BurnDebuffComponent->SetupAttachment(GetRootComponent());
-	// BurnDebuffComponent->DebuffTag = FAuraGameplayTags::Get().Debuff_Burn;
+	BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComponent");
+	BurnDebuffComponent->SetupAttachment(GetRootComponent());
+	BurnDebuffComponent->DebuffTag = FAuraGameplayTags::Get().Debuff_Burn;
 }
 
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const 
@@ -47,10 +48,22 @@ void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 	MulticastHandleDeath(DeathImpulse);
 }
 
+void AAuraCharacterBase::HandleKnockback_Implementation(const FVector& KnockbackImpulse)
+{
+	LaunchCharacter(KnockbackImpulse, false, false);
+}
+
+void AAuraCharacterBase::Knockback(const FVector& KnockbackImpulse)
+{
+	HandleKnockback(KnockbackImpulse);
+}
+
 void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& DeathImpulse)
 {
 	if (bDead) return;
 	bDead = true;
+	
+	OnDeathDelegate.Broadcast(this);
 	
 	if (Weapon)
 	{
@@ -60,11 +73,16 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 		Weapon->AddImpulse(DeathImpulse);
 	}
 	
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationCustomMode);
 	GetMesh()->SetEnableGravity(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 	
-	//GetMesh()->SetSimulatePhysics(true);
+	// GetMesh()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	// GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->AddImpulse(DeathImpulse);
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	UGameplayStatics::PlaySoundAtLocation(this,
 		DeathSound,
@@ -73,7 +91,6 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
-	OnDeathDelegate.Broadcast(this);
 	
 }
 
@@ -90,8 +107,7 @@ FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGamepl
 	{
 		return Weapon->GetSocketLocation(WeaponTipSocketName);
 	}
-
-
+	
 	return GetMesh()->GetSocketLocation(WeaponTipSocketName);
 }
 
@@ -123,6 +139,11 @@ FOnASCRegistered AAuraCharacterBase::GetOnASCRegisteredDelegate()
 FOnDeath AAuraCharacterBase::GetOnDeathDelegate()
 {
 	return OnDeathDelegate;
+}
+
+USkeletalMeshComponent* AAuraCharacterBase::GetWeapon_Implementation()
+{
+	return Weapon;
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()
